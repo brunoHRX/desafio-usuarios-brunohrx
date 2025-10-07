@@ -1,0 +1,13 @@
+@"
+.vs/
+backend/.vs/
+backend/bin/
+backend/obj/
+*.user
+backend/appsettings.Development.json
+
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+frontend/.env*
+"@ | Out-File -Encoding UTF8 .gitignore
