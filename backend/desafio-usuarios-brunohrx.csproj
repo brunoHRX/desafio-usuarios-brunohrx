@@ -7,6 +7,7 @@
 	<RootNamespace>desafio_usuarios_brunohrx</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />

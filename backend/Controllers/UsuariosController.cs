@@ -12,7 +12,8 @@ namespace desafio_usuarios_brunohrx.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("1.0")]
 public class UsuariosController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -24,7 +25,7 @@ public class UsuariosController : ControllerBase
         _configuration = configuration;
     }
 
-    // GET: api/Usuarios
+    // GET: api/v1/Usuarios
     [HttpGet]
     public async Task<IActionResult> GetUsuarios()
     {
@@ -32,7 +33,7 @@ public class UsuariosController : ControllerBase
         return Ok(usuarios);
     }
 
-    // GET: api/Usuarios/{id}
+    // GET: api/v1/Usuarios/{id}
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUsuario(int id)
     {
@@ -51,7 +52,7 @@ public class UsuariosController : ControllerBase
     }
 
 
-    // POST: api/Usuarios
+    // POST: api/v1/Usuarios
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] UsuarioCreateDto dto)
@@ -71,10 +72,11 @@ public class UsuariosController : ControllerBase
 
         _context.Usuarios.Add(objeto);
         await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetUsuario), new { id = objeto.id }, objeto);
+        return CreatedAtAction(nameof(GetUsuario), new { id = objeto.id }, new { objeto.id, objeto.usuario, objeto.email, objeto.ativo }); // Objeto Dto sem senha
+
     }
 
-    // PUT: api/Usuarios/{id}
+    // PUT: api/v1/Usuarios/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateUsuario(int id, [FromBody] UsuarioUpdateDto dto)
     {
@@ -112,7 +114,7 @@ public class UsuariosController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/Usuarios/alterar_senha
+    // POST: api/v1/Usuarios/alterar_senha
     [HttpPost("alterar_senha")]
     public async Task<IActionResult> UpdatePassword([FromBody] AlterarSenhaPayload payload)
     {
@@ -148,7 +150,7 @@ public class UsuariosController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/Usuarios/{id}
+    // DELETE: api/v1/Usuarios/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUsuario(int id)
     {
@@ -163,7 +165,7 @@ public class UsuariosController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/Usuarios/login
+    // POST: api/v1/Usuarios/login
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto request)

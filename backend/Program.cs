@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using desafio_usuarios_brunohrx.Startup;
-using desafio_usuarios_brunohrx.Data;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using desafio_usuarios_brunohrx.Controllers;
@@ -41,6 +40,14 @@ builder.Services.AddCors(options =>
               .SetIsOriginAllowed(_ => true)
               .AllowAnyHeader();
     });
+});
+
+// Configuração de versionamento de API
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+    options.ReportApiVersions = true;
 });
 
 
