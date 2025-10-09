@@ -12,8 +12,8 @@ namespace desafio_usuarios_brunohrx.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class UsuariosController : ControllerBase
 {
     private readonly AppDbContext _context;

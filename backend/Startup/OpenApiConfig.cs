@@ -1,5 +1,7 @@
-﻿using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace desafio_usuarios_brunohrx.Startup;
     public static class OpenApiConfig
@@ -8,71 +10,78 @@ namespace desafio_usuarios_brunohrx.Startup;
         {
             // Configuração padrão do Swagger
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
-        }
-
-        public static void UseOpenApi(this WebApplication app)
-        {
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI(options =>
-                {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "desafio_usuarios_brunohrx API v1");
-                    options.RoutePrefix = string.Empty; // Swagger na raiz
-                });
-            }
-        }
-
-        public static void AddSwaggerConfiguration(this IServiceCollection services)
-        {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "ePantanal API",
-                    Version = "v1"
-                });
-
-                // Configurar autenticação no Swagger
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                // Segurança Bearer (JWT)
+                c.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
                     Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer",
+                    Scheme = "bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Insira o token JWT no formato: Bearer {seu token}"
+                    Description = "Insira o token no formato: Bearer {seu_token}"
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
                     {
-                        new OpenApiSecurityScheme
                         {
-                            Reference = new OpenApiReference
+                            new OpenApiSecurityScheme
                             {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
-                    }
-                });
+                                Reference = new OpenApiReference
+                                { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
             });
-        }
+
+            // Gera um SwaggerDoc por versão de API automaticamente
+            services.ConfigureOptions<ConfigureSwaggerOptions>();
+    }
+
+ 
 
         public static void UseSwaggerConfiguration(this IApplicationBuilder app)
         {
+            var provider = app.ApplicationServices.GetRequiredService<IApiVersionDescriptionProvider>();
+
             app.UseSwagger(c =>
             {
-                c.RouteTemplate = "api-docs/{documentName}/swagger.json"; // Define a rota para o JSON
+                // JSONs em /api-docs/{documentName}/swagger.json
+                c.RouteTemplate = "api-docs/{documentName}/swagger.json";
             });
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/api-docs/v1/swagger.json", "desafio_usuarios_brunohrx API v1");
-                c.RoutePrefix = "api-docs"; // Define a rota para o Swagger UI
-            });
+                foreach (var desc in provider.ApiVersionDescriptions)
+                {
+                    c.SwaggerEndpoint($"/api-docs/{desc.GroupName}/swagger.json",
+                                      $"Desafio Usuarios API {desc.GroupName.ToUpperInvariant()}");
+                }
+                c.RoutePrefix = "api-docs"; // UI em /api-docs
+            });
         }
-    }
+
+        public sealed class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
+        {
+            private readonly IApiVersionDescriptionProvider _provider;
+
+            public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
+            {
+                _provider = provider;
+            }
+
+            public void Configure(SwaggerGenOptions options)
+            {
+                foreach (var desc in _provider.ApiVersionDescriptions)
+                {
+                    options.SwaggerDoc(desc.GroupName, new OpenApiInfo
+                    {
+                        Title = "Desafio Usuarios API",
+                        Version = desc.ApiVersion.ToString()
+                    });
+                }
+            }
+        }
+}
