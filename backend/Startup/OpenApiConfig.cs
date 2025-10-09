@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Threading.RateLimiting;
 
 namespace desafio_usuarios_brunohrx.Startup;
     public static class OpenApiConfig
@@ -40,9 +41,25 @@ namespace desafio_usuarios_brunohrx.Startup;
             services.ConfigureOptions<ConfigureSwaggerOptions>();
     }
 
- 
+    //Proteção por Rate Limiting
+    public static IServiceCollection AddRateLimiting(this IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.AddPolicy("auth-strict", httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anon",
+            factory: key => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 5, // 5 req/min
+                Window = TimeSpan.FromMinutes(1)
+            }));
+        });
+        return services;
+    }
 
-        public static void UseSwaggerConfiguration(this IApplicationBuilder app)
+    public static void UseSwaggerConfiguration(this IApplicationBuilder app)
         {
             var provider = app.ApplicationServices.GetRequiredService<IApiVersionDescriptionProvider>();
 

@@ -69,6 +69,8 @@ builder.Services.AddVersionedApiExplorer(options =>
     options.SubstituteApiVersionInUrl = true;     // substitui {version} na rota
 });
 
+builder.Services.AddRateLimiting();
+
 var app = builder.Build();
 
 
