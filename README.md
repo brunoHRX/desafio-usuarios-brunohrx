@@ -9,11 +9,11 @@ Construir um pequeno sistema de **gestão de usuários** com autenticação e CR
 1. **Tela de Cadastro (Sign up)**  
 2. **Tela de Login** com fluxo de **"Esqueci minha senha"**  
 3. **Área logada**  
-3.1. **Lista de usuários cadastrados**
-3.2. **Criação de novo usuário**  
-3.3. **Edição de usuário existente**  
-3.4. **Remoção de usuários**  
-3.5. **Funcionalidade de Logout**  
+   3.1. **Lista de usuários cadastrados**
+   3.2. **Criação de novo usuário**  
+   3.3. **Edição de usuário existente**  
+   3.4. **Remoção de usuários**  
+   3.5. **Funcionalidade de Logout**  
 
 ---
 
