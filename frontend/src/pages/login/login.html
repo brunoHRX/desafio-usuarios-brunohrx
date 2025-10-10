@@ -1,0 +1,16 @@
+<template>
+  <section class="auth-card">
+    <h1>Entrar</h1>
+    <form submit.trigger="submit()">
+      <label>Usuário <input value.bind="usuario" /></label>
+      <label>Senha <input type="password" value.bind="senha" /></label>
+      <button type="submit">Login</button>
+    </form>
+
+    <div class="links">
+      <a load="/register">Novo cadastro</a>
+      <a load="/forgot">Esqueci minha senha</a>
+    </div>
+    <p class="error" if.bind="error">${error}</p>
+  </section>
+</template>

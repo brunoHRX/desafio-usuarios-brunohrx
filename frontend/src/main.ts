@@ -1,6 +1,18 @@
-import Aurelia from 'aurelia';
-import { MyApp } from './my-app';
+// src/main.ts
+import { Aurelia } from 'aurelia';
+import { RouterConfiguration } from '@aurelia/router';
+import { DialogConfigurationStandard } from '@aurelia/dialog';
+import { App } from './app';
+import './styles/base.css';
 
 Aurelia
-  .app(MyApp)
+  .register(
+    
+    RouterConfiguration.customize({
+      useUrlFragmentHash: false, 
+    }),
+    
+    DialogConfigurationStandard
+  )
+  .app(App)
   .start();

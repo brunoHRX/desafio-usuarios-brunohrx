@@ -1,0 +1,30 @@
+<template>
+  <section class="auth-card">
+    <h1>Minha conta</h1>
+    <p><strong>Usuário:</strong> ${me?.usuario}</p>
+    <p><strong>E-mail:</strong> ${me?.email}</p>
+
+    <h3>Alterar senha</h3>
+    <form submit.trigger="changePassword()">
+      <label
+        >Senha atual <input type="password" value.bind="senhaAtual"
+      /></label>
+      <label
+        >Nova senha
+        <input type="password" value.bind="novaSenha" minlength="8" required
+      /></label>
+      <label
+        >Confirmar nova senha
+        <input
+          type="password"
+          value.bind="confirmacaoSenha"
+          minlength="8"
+          required
+      /></label>
+      <div class="actions">
+        <button type="submit">Salvar</button>
+      </div>
+    </form>
+    <p class="success" if.bind="msg">${msg}</p>
+  </section>
+</template>

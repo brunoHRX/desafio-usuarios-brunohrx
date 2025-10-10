@@ -1,0 +1,27 @@
+<template>
+  <div class="dialog">
+    <h3>${mode === 'create' ? 'Novo usuário' : 'Editar usuário'}</h3>
+    <form submit.trigger="ok()">
+      <label>Usuário <input value.bind="usuario" required /></label>
+      <label>E-mail <input type="email" value.bind="email" required /></label>
+
+      <div if.bind="mode==='create'">
+        <label
+          >Senha
+          <input type="password" value.bind="senha" minlength="8" required
+        /></label>
+      </div>
+
+      <label class="row" if.bind="mode==='edit'">
+        <input type="checkbox" checked.bind="ativo" /> Ativo
+      </label>
+
+      <div class="actions">
+        <button type="button" class="ghost" click.trigger="cancel()">
+          Cancelar
+        </button>
+        <button type="submit">Salvar</button>
+      </div>
+    </form>
+  </div>
+</template>

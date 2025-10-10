@@ -6,14 +6,23 @@ export default defineConfig({
   server: {
     open: !process.env.CI,
     port: 9000,
+    proxy: {
+      
+    '/api': {
+      target: 'http://localhost:5191', // porta do backend .NET
+      changeOrigin: true,
+      secure: false,
+    },
+    }
   },
-  esbuild: {
-    target: 'es2022'
-  },
-  plugins: [
-    aurelia({
-      useDev: true,
-    }),
-    nodePolyfills(),
-  ],
+
+    esbuild: {
+      target: 'es2022'
+    },
+    plugins: [
+      aurelia({
+        useDev: true,
+      }),
+      nodePolyfills(),
+    ],
 });

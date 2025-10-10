@@ -13,7 +13,7 @@ namespace desafio_usuarios_brunohrx.Controllers;
 
 [AllowAnonymous]
 [ApiController]
-[ApiVersion("1.0")]
+[ApiVersion("1")]
 [Route("api/v{version:apiVersion}/auth")]
 public class AuthController : ControllerBase {
 

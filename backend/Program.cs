@@ -9,10 +9,23 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 
+// Configuração de CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.WithOrigins("http://localhost:9000")              
+              .AllowAnyMethod()              
+              .AllowAnyHeader();
+    });
+});
+
+
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add(new AuthorizeFilter());
 });
+
 
 builder.AddDependencies();
 
@@ -42,17 +55,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Configuração de CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .SetIsOriginAllowed(_ => true)
-              .AllowAnyHeader();
-    });
-});
+
 
 // Configuração de versionamento de API
 builder.Services.AddApiVersioning(options =>
@@ -74,9 +77,22 @@ builder.Services.AddRateLimiting();
 var app = builder.Build();
 
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AllowAll");
+
+app.Use(async (ctx, next) =>
+{
+    if (HttpMethods.IsOptions(ctx.Request.Method))
+    {
+        ctx.Response.StatusCode = StatusCodes.Status204NoContent;
+        return;
+    }
+    await next();
+});
 
 app.UseAuthentication();
 
