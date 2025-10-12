@@ -1,0 +1,19 @@
+<!-- src/pages/app-shell.html -->
+<div class="min-h-screen grid grid-rows-[auto,1fr] bg-gray-50">
+  <header class="flex items-center justify-between px-6 py-3 border-b bg-white">
+    <div class="text-lg font-semibold">Painel</div>
+    <div class="flex items-center gap-3 text-sm">
+      <span if.bind="user">Olá, ${user?.usuario} (${user?.email})</span>
+      <button
+        class="border rounded px-3 py-1 hover:bg-gray-100"
+        click.trigger="logout()"
+      >
+        Sair
+      </button>
+    </div>
+  </header>
+
+  <main class="p-6">
+    <au-viewport name="vp-main"></au-viewport>
+  </main>
+</div>

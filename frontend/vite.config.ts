@@ -1,20 +1,11 @@
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import aurelia from '@aurelia/vite-plugin';
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  server: {
-    open: !process.env.CI,
-    port: 9000,
-    proxy: {
-      
-    '/api': {
-      target: 'http://localhost:5191', // porta do backend .NET
-      changeOrigin: true,
-      secure: false,
-    },
-    }
-  },
+  appType: 'spa',
+  server: { port: 9000, open: !process.env.CI, proxy: { '/api': { target: 'http://localhost:5191', changeOrigin: true, secure: false } } },
 
     esbuild: {
       target: 'es2022'
@@ -24,5 +15,6 @@ export default defineConfig({
         useDev: true,
       }),
       nodePolyfills(),
+      tailwindcss(),
     ],
 });

@@ -1,0 +1,106 @@
+<template>
+  <section class="max-w-xl mx-auto p-4">
+    <h3 class="text-xl font-semibold mb-4">
+      ${creating ? 'Novo usuário' : 'Editar usuário'}
+    </h3>
+
+    <form submit.trigger="save($event)" class="space-y-3" novalidate>
+      <!-- CRIAR -->
+      <div if.bind="creating" class="space-y-3">
+        <label class="block">
+          <span class="text-sm">Usuário</span>
+          <input
+            class="w-full border rounded-md p-2"
+            value.bind="modelCreate.usuario"
+            required
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-sm">E-mail</span>
+          <input
+            class="w-full border rounded-md p-2"
+            type="email"
+            value.bind="modelCreate.email"
+            required
+          />
+        </label>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-sm">Senha (min. 8)</span>
+            <input
+              class="w-full border rounded-md p-2"
+              type="password"
+              value.bind="modelCreate.senha"
+              required
+            />
+          </label>
+          <label class="block">
+            <span class="text-sm">Confirmar senha</span>
+            <input
+              class="w-full border rounded-md p-2"
+              type="password"
+              value.bind="modelCreate.confirmacaoSenha"
+              required
+            />
+          </label>
+        </div>
+      </div>
+
+      <!-- EDITAR -->
+      <div if.bind="!creating" class="space-y-3">
+        <label class="block">
+          <span class="text-sm">Usuário</span>
+          <input
+            class="w-full border rounded-md p-2"
+            value.bind="modelEdit.usuario"
+            required
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-sm">E-mail</span>
+          <input
+            class="w-full border rounded-md p-2"
+            type="email"
+            value.bind="modelEdit.email"
+            required
+          />
+        </label>
+
+        <label class="inline-flex items-center gap-2">
+          <input type="checkbox" checked.bind="modelEdit.ativo" />
+          <span class="text-sm">Ativo</span>
+        </label>
+
+        <!-- mostra rowVersion atual -->
+        <input type="hidden" value.bind="modelEdit.rowVersion" />
+        <p class="text-[11px] text-slate-500">
+          rowVersion: ${modelEdit.rowVersion}
+        </p>
+      </div>
+
+      <!-- Feedbacks -->
+      <div if.bind="tried && !formValid" class="text-red-600 text-sm">
+        ${validationMessage}
+      </div>
+      <p if.bind="error" class="text-red-600 text-sm">${error}</p>
+      <p if.bind="debug" class="text-xs text-slate-500">DEBUG: ${debug}</p>
+
+      <div class="flex gap-2 pt-1">
+        <!-- não desabilito o botão; deixo o save() validar e mostrar motivo -->
+        <button type="submit" class="border rounded px-3 py-1">
+          ${saving ? 'Salvando...' : 'Salvar'}
+        </button>
+        <button
+          type="button"
+          class="border rounded px-3 py-1"
+          click.trigger="goBack()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </section>
+</template>

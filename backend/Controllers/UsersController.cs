@@ -9,7 +9,7 @@ namespace desafio_usuarios_brunohrx.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("1.0")]
+[ApiVersion("1")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class UsersController : ControllerBase
 {
@@ -55,7 +55,7 @@ public class UsersController : ControllerBase
 
 
     // POST /users (admin)
-    [Authorize(Roles = "admin")]
+    //[Authorize(Roles = "admin")]
     [HttpPost]
     [ProducesResponseType(typeof(UserSummary), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -89,7 +89,7 @@ public class UsersController : ControllerBase
     }
 
     // PUT /users/{id} (admin) – requer RowVersion
-    [Authorize(Roles = "admin")]
+    //[Authorize(Roles = "admin")]
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(UserSummary), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -162,7 +162,7 @@ public class UsersController : ControllerBase
     }
 
     // DELETE /users/{id} – soft delete
-    [Authorize(Roles = "admin")]
+    //[Authorize(Roles = "admin")]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
@@ -176,7 +176,7 @@ public class UsersController : ControllerBase
 
 
     // POST /users/{id}/restore – reativa usuário soft-deletado
-    [Authorize(Roles = "admin")]
+    //[Authorize(Roles = "admin")]
     [HttpPost("{id:int}/restore")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Restore(int id, CancellationToken ct)

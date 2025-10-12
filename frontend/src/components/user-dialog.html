@@ -1,27 +1,64 @@
 <template>
-  <div class="dialog">
-    <h3>${mode === 'create' ? 'Novo usuário' : 'Editar usuário'}</h3>
-    <form submit.trigger="ok()">
-      <label>Usuário <input value.bind="usuario" required /></label>
-      <label>E-mail <input type="email" value.bind="email" required /></label>
+  <div class="fixed inset-0 bg-black/30 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-[400px] max-w-full">
+      <h3 class="text-lg font-semibold mb-4">
+        ${mode === 'create' ? 'Novo usuário' : 'Editar usuário'}
+      </h3>
 
-      <div if.bind="mode==='create'">
-        <label
-          >Senha
-          <input type="password" value.bind="senha" minlength="8" required
-        /></label>
-      </div>
+      <form submit.trigger="ok($event)" class="space-y-3" novalidate>
+        <label class="block">
+          <span>Usuário</span>
+          <input
+            value.bind="usuario"
+            class="border rounded px-2 py-1 w-full"
+            required
+          />
+        </label>
 
-      <label class="row" if.bind="mode==='edit'">
-        <input type="checkbox" checked.bind="ativo" /> Ativo
-      </label>
+        <label class="block">
+          <span>E-mail</span>
+          <input
+            type="email"
+            value.bind="email"
+            class="border rounded px-2 py-1 w-full"
+            required
+          />
+        </label>
 
-      <div class="actions">
-        <button type="button" class="ghost" click.trigger="cancel()">
-          Cancelar
-        </button>
-        <button type="submit">Salvar</button>
-      </div>
-    </form>
+        <div if.bind="mode==='create'">
+          <label class="block">
+            <span>Senha</span>
+            <input
+              type="password"
+              value.bind="senha"
+              minlength="8"
+              class="border rounded px-2 py-1 w-full"
+              required
+            />
+          </label>
+        </div>
+
+        <label class="flex items-center gap-2" if.bind="mode==='edit'">
+          <input type="checkbox" checked.bind="ativo" />
+          <span>Ativo</span>
+        </label>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button
+            type="button"
+            class="px-3 py-1 rounded border"
+            click.trigger="cancel()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            Salvar
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>

@@ -9,10 +9,11 @@
     "importHelpers": true,
     "sourceMap": true
   },
-  "include": [
-    "src"
-, "src/layouts/.ts"
-,"env.d.ts"  ],
+"include": [
+  "src",
+  "src/layouts/.ts",
+  "env.d.ts"
+],
   "files": [
     "src/resource.d.ts"
   ]

@@ -1,18 +1,20 @@
-// src/main.ts
-import { Aurelia } from 'aurelia';
+
+import Aurelia from 'aurelia';                       
 import { RouterConfiguration } from '@aurelia/router';
 import { DialogConfigurationStandard } from '@aurelia/dialog';
 import { App } from './app';
-import './styles/base.css';
+import './styles.css';
+
+const host = document.querySelector('#app') as HTMLElement;
+if (!host) {
+
+  throw new Error('Elemento #app não encontrado no index.html');
+}
 
 Aurelia
   .register(
-    
-    RouterConfiguration.customize({
-      useUrlFragmentHash: false, 
-    }),
-    
+    RouterConfiguration.customize({ useUrlFragmentHash: false }),
     DialogConfigurationStandard
   )
-  .app(App)
+  .app({ host, component: App })                     
   .start();
