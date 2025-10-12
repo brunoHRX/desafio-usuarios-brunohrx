@@ -32,7 +32,7 @@ function setAuth(jwt?: string|null, refresh?: string|null, expiresIn?: number|nu
 
 export const auth = {
   async login(usuario: string, senha: string) {
-    const data = await api.post('/auth/tokens', { usuario, senha }) as AuthResponse;
+    const data = await api.post('/auth/login', { usuario, senha }) as AuthResponse;
     const jwt = data.jwt ?? data.accessToken ?? data.token;
     const refresh = data.refresh ?? data.refreshToken;
     if (!jwt || !refresh) throw new Error('Resposta de login sem tokens.');

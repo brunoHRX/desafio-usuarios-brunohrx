@@ -28,20 +28,56 @@ async function rawRequest(path: string, init: RequestInit = {}) {
 }
 
 
+export class ApiError extends Error {
+  status: number;
+  problem?: {
+    type?: string;
+    title?: string;
+    detail?: string;
+    errors?: Record<string, string[]>;
+  };
+  bodyRaw?: string;
+
+  constructor(status: number, message: string, problem?: ApiError['problem'], bodyRaw?: string) {
+    super(message);
+    this.status = status;
+    this.problem = problem;
+    this.bodyRaw = bodyRaw;
+  }
+}
+
 async function request(path: string, init: RequestInit = {}, retry = true): Promise<any> {
   let res = await rawRequest(path, init);
 
   if (res.status === 401 && retry) {
     const ok = await tryRefreshToken();
-    if (ok) {
-      res = await rawRequest(path, init); // refaz com novo JWT
-    }
+    if (ok) res = await rawRequest(path, init);
   }
 
   if (!res.ok) {
-    const text = await res.text();
-    
-    throw new Error(text || res.statusText);
+    const ct = res.headers.get('content-type') ?? '';
+    const raw = await res.text();
+    let problem: ApiError['problem'] | undefined;
+    let message = res.statusText || 'Erro de requisição';
+
+    // suporta ProblemDetails (application/problem+json) e JSON comum
+    if (ct.includes('application/problem+json') || ct.includes('application/json')) {
+      try {
+        const data = JSON.parse(raw);
+        const title = data.title || data.error || message;
+        problem = {
+          type: data.type,
+          title,
+          detail: data.detail,
+          errors: data.errors, // ModelState
+        };
+        message = problem.detail || problem.title || message;
+      } catch {}
+    } else if (raw) {
+      message = raw;
+    }
+
+    throw new ApiError(res.status, message, problem, raw);
   }
 
   const text = await res.text();
@@ -84,3 +120,4 @@ export const api = {
   _setAuth: setAuth,
   _getAuth: getAuth,
 };
+

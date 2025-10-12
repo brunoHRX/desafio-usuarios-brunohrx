@@ -1,0 +1,77 @@
+<template>
+  <section class="min-h-screen grid place-items-center p-4">
+    <div class="w-full max-w-sm border rounded-xl p-6 shadow-sm bg-white">
+      <h1 class="text-xl font-semibold mb-4">Criar conta</h1>
+
+      <p
+        if.bind="error"
+        class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2"
+      >
+        ${error}
+      </p>
+
+      <form submit.trigger="submit()" class="space-y-3" novalidate>
+        <label class="block">
+          <span class="text-sm">Usuário</span>
+          <input
+            class="w-full border rounded-md p-2"
+            value.bind="usuario"
+            required
+          />
+          <small if.bind="tried && !usuarioOk" class="text-red-600 text-xs"
+            >Mínimo 2 caracteres.</small
+          >
+        </label>
+
+        <label class="block">
+          <span class="text-sm">E-mail</span>
+          <input
+            class="w-full border rounded-md p-2"
+            type="email"
+            value.bind="email"
+            required
+          />
+          <small if.bind="tried && !emailOk" class="text-red-600 text-xs"
+            >E-mail inválido.</small
+          >
+        </label>
+
+        <label class="block">
+          <span class="text-sm">Senha</span>
+          <input
+            class="w-full border rounded-md p-2"
+            type="password"
+            value.bind="senha"
+            required
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-sm">Confirmar senha</span>
+          <input
+            class="w-full border rounded-md p-2"
+            type="password"
+            value.bind="confirmacaoSenha"
+            required
+          />
+          <small if.bind="tried && !senhaOk" class="text-red-600 text-xs"
+            >Senha precisa ter 8+ e bater com a confirmação.</small
+          >
+        </label>
+
+        <button
+          class="w-full rounded-md border px-4 py-2"
+          disabled.bind="isLoading"
+        >
+          ${isLoading ? 'Criando...' : 'Criar conta'}
+        </button>
+      </form>
+
+      <div class="text-sm mt-3 flex justify-between">
+        <button class="underline" type="button" click.trigger="goLogin()">
+          Já tenho conta
+        </button>
+      </div>
+    </div>
+  </section>
+</template>

@@ -1,45 +1,73 @@
 <template>
   <div class="fixed inset-0 bg-black/30 flex items-center justify-center">
-    <div class="bg-white rounded-xl shadow-xl p-6 w-[400px] max-w-full">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-[420px] max-w-full">
       <h3 class="text-lg font-semibold mb-4">
         ${mode === 'create' ? 'Novo usuário' : 'Editar usuário'}
       </h3>
 
+      <p
+        if.bind="formError"
+        class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2"
+      >
+        ${formError}
+      </p>
+
       <form submit.trigger="ok($event)" class="space-y-3" novalidate>
         <label class="block">
-          <span>Usuário</span>
+          <span class="text-sm">Usuário</span>
           <input
-            value.bind="usuario"
             class="border rounded px-2 py-1 w-full"
+            value.bind="usuario"
             required
+            disabled.bind="saving"
           />
+          <small if.bind="tried && !usuarioOk" class="text-red-600 text-xs"
+            >Usuário deve ter ao menos 2 caracteres.</small
+          >
+          <small if.bind="fieldErrors.usuario" class="text-red-600 text-xs"
+            >${fieldErrors.usuario}</small
+          >
         </label>
 
         <label class="block">
-          <span>E-mail</span>
+          <span class="text-sm">E-mail</span>
           <input
+            class="border rounded px-2 py-1 w-full"
             type="email"
             value.bind="email"
-            class="border rounded px-2 py-1 w-full"
             required
+            disabled.bind="saving"
           />
+          <small if.bind="tried && !emailOk" class="text-red-600 text-xs"
+            >E-mail inválido.</small
+          >
+          <small if.bind="fieldErrors.email" class="text-red-600 text-xs"
+            >${fieldErrors.email}</small
+          >
         </label>
 
         <div if.bind="mode==='create'">
           <label class="block">
-            <span>Senha</span>
+            <span class="text-sm">Senha</span>
             <input
+              class="border rounded px-2 py-1 w-full"
               type="password"
               value.bind="senha"
               minlength="8"
-              class="border rounded px-2 py-1 w-full"
               required
+              disabled.bind="saving"
             />
+            <small if.bind="tried && !senhaOk" class="text-red-600 text-xs"
+              >Senha deve ter pelo menos 8 caracteres.</small
+            >
+            <small if.bind="fieldErrors.senha" class="text-red-600 text-xs"
+              >${fieldErrors.senha}</small
+            >
           </label>
         </div>
 
         <label class="flex items-center gap-2" if.bind="mode==='edit'">
-          <input type="checkbox" checked.bind="ativo" />
+          <input type="checkbox" checked.bind="ativo" disabled.bind="saving" />
           <span>Ativo</span>
         </label>
 
@@ -48,14 +76,16 @@
             type="button"
             class="px-3 py-1 rounded border"
             click.trigger="cancel()"
+            disabled.bind="saving"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+            class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+            disabled.bind="saving"
           >
-            Salvar
+            ${saving ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </form>

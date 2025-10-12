@@ -90,13 +90,18 @@
 
       <div class="flex gap-2 pt-1">
         <!-- não desabilito o botão; deixo o save() validar e mostrar motivo -->
-        <button type="submit" class="border rounded px-3 py-1">
+        <button
+          type="submit"
+          class="border rounded px-3 py-1"
+          disabled.bind="saving"
+        >
           ${saving ? 'Salvando...' : 'Salvar'}
         </button>
         <button
           type="button"
           class="border rounded px-3 py-1"
           click.trigger="goBack()"
+          disabled.bind="saving"
         >
           Cancelar
         </button>

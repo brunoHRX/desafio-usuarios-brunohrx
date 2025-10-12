@@ -26,8 +26,8 @@ public class AuthController : ControllerBase {
         _config = config;
     }
 
-    // POST: /auth/tokens
-    [HttpPost("tokens")]
+    // POST: /auth/login
+    [HttpPost("login")]
     [EnableRateLimiting("auth-strict")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -46,6 +46,59 @@ public class AuthController : ControllerBase {
         var body = new AuthResponse(jwt, expiresIn, refresh.ToString(),
         new UserSummary { id = user.id, usuario = user.usuario, email = user.email, ativo = user.ativo });
         return Ok(body);
+    }
+
+    // POST: /auth/signup
+    [HttpPost("signup")]
+    [ProducesResponseType(typeof(UserSummary), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Signup([FromBody] SignupRequest req, CancellationToken ct)
+    {
+        var errors = new Dictionary<string, string[]>();
+
+        if (string.IsNullOrWhiteSpace(req.usuario) || req.usuario.Trim().Length < 2)
+            errors["usuario"] = new[] { "Usuário deve ter ao menos 2 caracteres." };
+
+        if (string.IsNullOrWhiteSpace(req.email) || !req.email.Contains('@'))
+            errors["email"] = new[] { "E-mail inválido." };
+
+        if (string.IsNullOrWhiteSpace(req.senha) || req.senha.Length < 8)
+            errors["senha"] = new[] { "Senha deve ter pelo menos 8 caracteres." };
+
+        if (errors.Count > 0)
+            return ValidationProblem(new ValidationProblemDetails(errors));
+
+        var usuarioNorm = req.usuario.Trim();
+        var emailNorm = req.email.Trim().ToLowerInvariant();
+
+        // === Verificação de duplicidade ===
+        var exists = await _context.Usuarios.IgnoreQueryFilters()
+            .AnyAsync(u => u.usuario == usuarioNorm || u.email.ToLower() == emailNorm, ct);
+
+        if (exists)
+            return Conflict(new ProblemDetails { Title = "Usuário ou e-mail já cadastrado." });
+
+        var entidade = new Usuario
+        {
+            usuario = usuarioNorm,
+            email = emailNorm,
+            ativo = true, // ou false se quiser exigir confirmação de e-mail
+            senha = BCrypt.Net.BCrypt.HashPassword(req.senha)
+        };
+
+        _context.Usuarios.Add(entidade);
+        await _context.SaveChangesAsync(ct);
+
+        var body = new UserSummary
+        {
+            id = entidade.id,
+            usuario = entidade.usuario,
+            email = entidade.email,
+            ativo = entidade.ativo,
+            rowVersion = entidade.RowVersion
+        };
+
+        return CreatedAtAction(nameof(Me), new { version = "1" }, body);
     }
 
     // POST: /auth/refresh

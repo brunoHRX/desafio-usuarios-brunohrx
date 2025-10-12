@@ -1,7 +1,9 @@
 import { inject } from 'aurelia';
 import { IRouteViewModel, IRouter } from '@aurelia/router';
-import { api } from '../services/api';
+import { api, ApiError } from '../services/api';
 import type { UserSummary } from '../types/users';
+import { notify } from '../shared/notify';
+import { showApiError } from '../shared/error-utils';
 
 type CreateModel = { usuario: string; email: string; senha: string; confirmacaoSenha: string };
 type EditModel   = { usuario: string; email: string; ativo: boolean; rowVersion: string };
@@ -13,7 +15,7 @@ export class UserForm implements IRouteViewModel {
   id?: number | null;
   creating = false;
   saving = false;
-  tried = false;              // marca que tentamos salvar (para exibir msgs)
+  tried = false;             
   error: string | null = null;
   debug: string | null = null;
 
@@ -69,7 +71,7 @@ export class UserForm implements IRouteViewModel {
       if (!this.modelEdit.rowVersion) return 'Token de concorrência ausente (rowVersion).';
     }
     return 'Preencha corretamente os campos obrigatórios.';
-    }
+  }
 
   async save(e?: Event) {
     e?.preventDefault();
@@ -90,8 +92,8 @@ export class UserForm implements IRouteViewModel {
           email: this.modelCreate.email.trim().toLowerCase(),
           senha: this.modelCreate.senha
         };
-        console.log('[POST /users] payload', payload);
-        await api.post('/users', payload);
+        const created = await api.post('/users', payload);
+        notify.success('Usuário criado com sucesso.');
       } else {
         const payload = {
           usuario: this.modelEdit.usuario.trim(),
@@ -99,28 +101,23 @@ export class UserForm implements IRouteViewModel {
           ativo: this.modelEdit.ativo,
           rowVersion: this.modelEdit.rowVersion
         };
-        console.log('[PUT /users/{id}] payload', payload);
-        await api.put(`/users/${this.id}`, payload);
+        const updated = await api.put(`/users/${this.id}`, payload);
+        notify.success('Usuário atualizado com sucesso.');
       }
 
       window.dispatchEvent(new CustomEvent('users:changed'));
       await this.router.load('users'); // volta para a lista
-    } catch (e: any) {
-      const msg = String(e?.message || '');
-      console.error('[save error]', msg);
-      if (msg.includes('401')) {
-        this.error = 'Sessão expirada. Faça login novamente.';
+    } catch (e) {
+      // Banner + toast centralizado
+      this.error = e instanceof ApiError
+        ? (e.problem?.detail || e.problem?.title || e.message)
+        : 'Falha ao salvar.';
+
+      showApiError(e, this.creating ? 'Erro ao criar usuário.' : 'Erro ao atualizar usuário.');
+
+      // Redireciona se sessão expirada
+      if (e instanceof ApiError && e.status === 401) {
         await this.router.load('login');
-      } else if (msg.includes('403')) {
-        this.error = 'Sem permissão: ação restrita a admin.';
-      } else if (msg.includes('409')) {
-        this.error = this.creating
-          ? 'Usuário ou e-mail já cadastrado.'
-          : 'Conflito de concorrência. Recarregue e tente novamente.';
-      } else if (msg.includes('404')) {
-        this.error = 'Endpoint não encontrado. Confira a base URL (/api/v1).';
-      } else {
-        this.error = 'Falha ao salvar.';
       }
     } finally {
       this.saving = false;
@@ -128,7 +125,6 @@ export class UserForm implements IRouteViewModel {
   }
 
   goBack() {
-    // volta para a lista
     this.router.load('users');
   }
 }

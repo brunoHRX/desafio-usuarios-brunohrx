@@ -73,5 +73,15 @@ public class LoginRequest
     [Required] public string senha { get; set; } = default!;
 }
 
+public class SignupRequest
+{
+    [Required, MinLength(2)]
+    public string usuario { get; set; } = null!;
+    [Required, EmailAddress]
+    public string email { get; set; } = null!;
+    [Required, MinLength(8)]
+    public string senha { get; set; } = null!;
+}
+
 
 public record AuthResponse(string accessToken, int expiresIn, string refreshToken, UserSummary user);

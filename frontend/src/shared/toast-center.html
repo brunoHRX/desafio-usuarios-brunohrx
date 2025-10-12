@@ -1,0 +1,5 @@
+<template>
+  <div class="fixed top-4 right-4 space-y-2 z-50">
+    <div repeat.for="t of toasts" class.bind="classes(t.kind)">${t.text}</div>
+  </div>
+</template>

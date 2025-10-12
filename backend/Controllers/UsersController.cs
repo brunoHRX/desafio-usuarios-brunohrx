@@ -53,7 +53,6 @@ public class UsersController : ControllerBase
         return Ok(new UserSummary { id = u.id, usuario = u.usuario, email = u.email, ativo = u.ativo, rowVersion = u.RowVersion });
     }
 
-
     // POST /users (admin)
     //[Authorize(Roles = "admin")]
     [HttpPost]
