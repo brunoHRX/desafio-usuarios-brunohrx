@@ -1,0 +1,52 @@
+<template>
+  <section class="min-h-screen grid place-items-center p-4">
+    <div class="w-full max-w-sm border rounded-xl p-6 shadow-sm bg-white">
+      <h1 class="text-xl font-semibold mb-4">Redefinir senha</h1>
+
+      <p
+        if.bind="error"
+        class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2"
+      >
+        ${error}
+      </p>
+
+      <form submit.trigger="submit()" class="space-y-3" novalidate>
+        <label class="block">
+          <span class="text-sm">Nova senha</span>
+          <input
+            class="w-full border rounded-md p-2"
+            type="password"
+            value.bind="novaSenha"
+            required
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-sm">Confirmar nova senha</span>
+          <input
+            class="w-full border rounded-md p-2"
+            type="password"
+            value.bind="confirmacaoSenha"
+            required
+          />
+          <small if.bind="tried && !senhaOk" class="text-red-600 text-xs">
+            Senha precisa ter 8+ caracteres e coincidir com a confirmação.
+          </small>
+        </label>
+
+        <button
+          class="w-full rounded-md border px-4 py-2"
+          disabled.bind="isLoading"
+        >
+          ${isLoading ? 'Redefinindo...' : 'Redefinir'}
+        </button>
+      </form>
+
+      <div class="text-sm mt-3">
+        <button class="underline" type="button" click.trigger="goLogin()">
+          Voltar ao login
+        </button>
+      </div>
+    </div>
+  </section>
+</template>

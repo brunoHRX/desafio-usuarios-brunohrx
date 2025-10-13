@@ -36,6 +36,17 @@ public class UsuarioUpdateDto
     public byte[] rowVersion { get; set; } = Array.Empty<byte>();
 }
 
+public class ResetPasswordRequest
+{
+    public Guid Token { get; set; }
+    public string NovaSenha { get; set; } = "";
+    public string ConfirmacaoSenha { get; set; } = "";
+}
+
+public class ForgotPasswordRequest
+{
+    public string Email { get; set; } = "";
+}
 
 public class AlterarSenhaPayload
 {

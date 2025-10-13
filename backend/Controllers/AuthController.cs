@@ -1,12 +1,13 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using desafio_usuarios_brunohrx.Data;
+using desafio_usuarios_brunohrx.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.RateLimiting;
-using desafio_usuarios_brunohrx.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace desafio_usuarios_brunohrx.Controllers;
 
@@ -186,6 +187,119 @@ public class AuthController : ControllerBase {
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
         var expiresIn = (int)TimeSpan.FromMinutes(60).TotalSeconds;
         return (jwt, expiresIn);
+    }
+
+    // POST: /auth/forgot
+    [HttpPost("forgot")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req, CancellationToken ct)
+    {
+        
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
+
+        var email = (req.Email ?? "").Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+        {
+            var problem = new ValidationProblemDetails(new Dictionary<string, string[]>
+            {
+                ["Email"] = new[] { "E-mail inválido." }
+            })
+            {
+                Title = "Erros de validação",
+                Status = StatusCodes.Status400BadRequest
+            };
+            return ValidationProblem(problem);
+        }
+
+        var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.email == email && u.ativo, ct);
+
+        
+        if (user is null) return NoContent();
+
+        // Cria token de reset (expira em 1 hora)
+        var token = new PasswordResetToken
+        {
+            UserId = user.id,
+            ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
+            Ip = HttpContext.Connection.RemoteIpAddress?.ToString(),
+            UserAgent = HttpContext.Request.Headers.UserAgent.ToString()
+        };
+
+        _context.PasswordResetTokens.Add(token);
+        await _context.SaveChangesAsync(ct);
+
+        // Gera link para o FRONTEND
+        var baseUrl = Environment.GetEnvironmentVariable("FRONT_BASE_URL") ?? "http://localhost:9000";
+        var resetLink = $"{baseUrl}/reset-password?token={token.Id}";
+
+        // Corpo do e-mail (simples, pode trocar por template)
+        var html = $@"
+          <p>Olá {user.usuario},</p>
+          <p>Recebemos uma solicitação para redefinir sua senha. Se foi você, use o link abaixo (expira em 1 hora):</p>
+          <p>
+            <a href=""{resetLink}"" style=""display:inline-block;background:#2563eb;color:#fff;
+               padding:10px 16px;border-radius:8px;text-decoration:none"">
+               Redefinir senha
+            </a>
+          </p>
+          <p>Se o botão não funcionar, copie e cole este link no navegador:<br/>{resetLink}</p>
+          <p>Se você não solicitou, pode ignorar este e-mail.</p>";
+
+        await EmailService.SendAsync(user.email, "Redefinição de senha", html);
+
+        return NoContent();
+    }
+
+
+    // POST: /auth/reset
+    [HttpPost("reset")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req, CancellationToken ct)
+    {
+        
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
+
+        if (req.NovaSenha != req.ConfirmacaoSenha)
+        {
+            var problem = new ValidationProblemDetails(new Dictionary<string, string[]>
+            {
+                ["ConfirmacaoSenha"] = new[] { "Confirmação de senha não confere." }
+            })
+            {
+                Title = "Erros de validação",
+                Status = StatusCodes.Status400BadRequest
+            };
+            return ValidationProblem(problem);
+        }
+
+        var token = await _context.PasswordResetTokens
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.Id == req.Token, ct);
+
+        if (token is null || !token.IsValid)
+            return BadRequest(new ProblemDetails { Title = "Token inválido, expirado ou já utilizado." });
+
+        // Redefine a senha
+        token.User.senha = BCrypt.Net.BCrypt.HashPassword(req.NovaSenha);
+        token.Used = true;
+
+        
+        var refreshToRevoke = _context.AuthRefreshTokens
+            .Where(r => r.UserId == token.UserId && r.RevokedAt == null);
+        await refreshToRevoke.ForEachAsync(r => r.RevokedAt = DateTimeOffset.UtcNow, ct);
+
+        await _context.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    [HttpGet("test-email")]
+    public async Task<IActionResult> TestEmail()
+    {
+        await EmailService.SendAsync("seuemail@teste.com", "Teste SMTP", "<p>Funcionando 🎉</p>");
+        return Ok("E-mail enviado com sucesso");
     }
 
 

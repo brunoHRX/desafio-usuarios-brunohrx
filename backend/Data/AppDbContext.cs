@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<AuthRefreshToken> AuthRefreshTokens => Set<AuthRefreshToken>();
 
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,6 +33,16 @@ public class AppDbContext : DbContext
         // RefreshToken
         var rt = modelBuilder.Entity<AuthRefreshToken>();
         rt.HasIndex(x => new { x.UserId, x.ExpiresAt });
+
+        // ReseteToken
+        var pr = modelBuilder.Entity<PasswordResetToken>();
+        pr.HasKey(x => x.Id);
+        pr.HasIndex(x => x.UserId);
+        pr.HasOne(x => x.User)
+         .WithMany()              // sem navegação reversa
+         .HasForeignKey(x => x.UserId)
+         .OnDelete(DeleteBehavior.Cascade);
+        pr.Property(x => x.Used).HasDefaultValue(false);
 
     }
 }

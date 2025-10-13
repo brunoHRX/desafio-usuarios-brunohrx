@@ -1,0 +1,46 @@
+<template>
+  <section class="min-h-screen grid place-items-center p-4">
+    <div class="w-full max-w-sm border rounded-xl p-6 shadow-sm bg-white">
+      <h1 class="text-xl font-semibold mb-4">Esqueci minha senha</h1>
+
+      <p class="text-sm text-slate-600 mb-3">
+        Informe seu e-mail para receber um link de redefinição.
+      </p>
+
+      <p
+        if.bind="error"
+        class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2"
+      >
+        ${error}
+      </p>
+
+      <form submit.trigger="submit()" class="space-y-3" novalidate>
+        <label class="block">
+          <span class="text-sm">E-mail</span>
+          <input
+            class="w-full border rounded-md p-2"
+            type="email"
+            value.bind="email"
+            required
+          />
+          <small if.bind="tried && !emailOk" class="text-red-600 text-xs"
+            >E-mail inválido.</small
+          >
+        </label>
+
+        <button
+          class="w-full rounded-md border px-4 py-2"
+          disabled.bind="isLoading"
+        >
+          ${isLoading ? 'Enviando...' : 'Enviar'}
+        </button>
+      </form>
+
+      <div class="text-sm mt-3">
+        <button class="underline" type="button" click.trigger="goLogin()">
+          Voltar ao login
+        </button>
+      </div>
+    </div>
+  </section>
+</template>
