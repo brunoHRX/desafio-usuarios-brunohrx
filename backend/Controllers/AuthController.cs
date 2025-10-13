@@ -226,7 +226,7 @@ public class AuthController : ControllerBase {
             UserAgent = HttpContext.Request.Headers.UserAgent.ToString()
         };
 
-        _context.PasswordResetTokens.Add(token);
+        _context.PasswordResetToken.Add(token);
         await _context.SaveChangesAsync(ct);
 
         // Gera link para o FRONTEND
@@ -275,7 +275,7 @@ public class AuthController : ControllerBase {
             return ValidationProblem(problem);
         }
 
-        var token = await _context.PasswordResetTokens
+        var token = await _context.PasswordResetToken
             .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.Id == req.Token, ct);
 
