@@ -15,7 +15,7 @@ export class UserForm implements IRouteViewModel {
   id?: number | null;
   creating = false;
   saving = false;
-  tried = false;             
+  tried = false;
   error: string | null = null;
   debug: string | null = null;
 
@@ -92,7 +92,7 @@ export class UserForm implements IRouteViewModel {
           email: this.modelCreate.email.trim().toLowerCase(),
           senha: this.modelCreate.senha
         };
-        const created = await api.post('/users', payload);
+        await api.post('/users', payload);
         notify.success('Usuário criado com sucesso.');
       } else {
         const payload = {
@@ -101,13 +101,13 @@ export class UserForm implements IRouteViewModel {
           ativo: this.modelEdit.ativo,
           rowVersion: this.modelEdit.rowVersion
         };
-        const updated = await api.put(`/users/${this.id}`, payload);
+        await api.put(`/users/${this.id}`, payload);
         notify.success('Usuário atualizado com sucesso.');
       }
 
       window.dispatchEvent(new CustomEvent('users:changed'));
-      await this.router.load('users'); // volta para a lista
-    } catch (e) {
+      await this.router.load('users');
+    } catch (e: unknown) {
       // Banner + toast centralizado
       this.error = e instanceof ApiError
         ? (e.problem?.detail || e.problem?.title || e.message)
@@ -115,7 +115,6 @@ export class UserForm implements IRouteViewModel {
 
       showApiError(e, this.creating ? 'Erro ao criar usuário.' : 'Erro ao atualizar usuário.');
 
-      // Redireciona se sessão expirada
       if (e instanceof ApiError && e.status === 401) {
         await this.router.load('login');
       }

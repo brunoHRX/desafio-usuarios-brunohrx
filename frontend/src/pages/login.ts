@@ -28,8 +28,8 @@ export class Login {
     try {
       await auth.login(this.usuario.trim(), this.senha);
       await this.router.load('/app');
-    } catch (e: any) {
-      this.error = e?.message || 'Usuário ou senha inválidos.';
+    } catch (e: unknown) {
+      this.error = (e as Error)?.message || 'Usuário ou senha inválidos.';
     } finally {
       this.isLoading = false;
     }

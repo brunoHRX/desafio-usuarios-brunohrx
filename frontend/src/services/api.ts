@@ -1,5 +1,15 @@
-const baseUrl = import.meta.env.VITE_API_BASE;
+const baseUrl = import.meta.env.VITE_API_BASE as string;
 
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public bodyText: string,
+    public problem?: { title?: string; detail?: string; errors?: Record<string, string[]> }
+  ) {
+    super(problem?.title || bodyText || `HTTP ${status}`);
+    this.name = 'ApiError';
+  }
+}
 
 function getAuth() {
   const jwt = localStorage.getItem('token');
@@ -27,68 +37,37 @@ async function rawRequest(path: string, init: RequestInit = {}) {
   return res;
 }
 
-
-export class ApiError extends Error {
-  status: number;
-  problem?: {
-    type?: string;
-    title?: string;
-    detail?: string;
-    errors?: Record<string, string[]>;
-  };
-  bodyRaw?: string;
-
-  constructor(status: number, message: string, problem?: ApiError['problem'], bodyRaw?: string) {
-    super(message);
-    this.status = status;
-    this.problem = problem;
-    this.bodyRaw = bodyRaw;
-  }
+async function toJsonSafe<T>(res: Response): Promise<T | null> {
+  const text = await res.text();
+  if (!text) return null;
+  try { return JSON.parse(text) as T; } catch { return null; }
 }
 
-async function request(path: string, init: RequestInit = {}, retry = true): Promise<any> {
+async function request<T = unknown>(path: string, init: RequestInit = {}, retry = true): Promise<T> {
   let res = await rawRequest(path, init);
 
   if (res.status === 401 && retry) {
     const ok = await tryRefreshToken();
-    if (ok) res = await rawRequest(path, init);
+    if (ok) {
+      res = await rawRequest(path, init); // refaz com novo JWT
+    }
   }
 
   if (!res.ok) {
-    const ct = res.headers.get('content-type') ?? '';
-    const raw = await res.text();
+    const bodyText = await res.text();
     let problem: ApiError['problem'] | undefined;
-    let message = res.statusText || 'Erro de requisição';
-
-    // suporta ProblemDetails (application/problem+json) e JSON comum
-    if (ct.includes('application/problem+json') || ct.includes('application/json')) {
-      try {
-        const data = JSON.parse(raw);
-        const title = data.title || data.error || message;
-        problem = {
-          type: data.type,
-          title,
-          detail: data.detail,
-          errors: data.errors, // ModelState
-        };
-        message = problem.detail || problem.title || message;
-      } catch {}
-    } else if (raw) {
-      message = raw;
-    }
-
-    throw new ApiError(res.status, message, problem, raw);
+    try { problem = JSON.parse(bodyText); } catch { /* noop */ }
+    throw new ApiError(res.status, bodyText, problem);
   }
 
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
+  const data = await toJsonSafe<T>(res);
+  return (data ?? (null as unknown as T));
 }
 
 async function tryRefreshToken(): Promise<boolean> {
   const { refresh } = getAuth();
   if (!refresh) return false;
 
-  
   const res = await fetch(`${baseUrl}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -101,23 +80,23 @@ async function tryRefreshToken(): Promise<boolean> {
     return false;
   }
 
-  const data = await res.json();
+  type RefreshResponse = { jwt?: string; accessToken?: string; token?: string; refresh?: string; refreshToken?: string; user?: unknown; };
+  const data: RefreshResponse = await res.json();
   const newJwt = data.jwt ?? data.accessToken ?? data.token;
   const newRefresh = data.refresh ?? data.refreshToken;
-  setAuth(newJwt, newRefresh);
+  setAuth(newJwt ?? null, newRefresh ?? null);
   if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
   return true;
 }
 
 export const api = {
-  get: (p: string) => request(p),
-  post: (p: string, body?: any) =>
-    request(p, { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined }),
-  put: (p: string, body?: any) =>
-    request(p, { method: 'PUT', body: body !== undefined ? JSON.stringify(body) : undefined }),
-  delete: (p: string) => request(p, { method: 'DELETE' }),
+  get: <T = unknown>(p: string) => request<T>(p),
+  post: <T = unknown>(p: string, body?: unknown) =>
+    request<T>(p, { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined }),
+  put: <T = unknown>(p: string, body?: unknown) =>
+    request<T>(p, { method: 'PUT', body: body !== undefined ? JSON.stringify(body) : undefined }),
+  delete: <T = unknown>(p: string) => request<T>(p, { method: 'DELETE' }),
 
   _setAuth: setAuth,
   _getAuth: getAuth,
 };
-

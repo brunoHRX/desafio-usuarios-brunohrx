@@ -1,9 +1,20 @@
 import { IDialogCustomElementViewModel, IDialogController } from '@aurelia/dialog';
 import { inject } from 'aurelia';
-import { api, ApiError } from '../services/api';
+import { api } from '../services/api';             
 import { notify } from '../shared/notify';
+import type { UserSummary } from '../types/users';
 
 type Mode = 'create' | 'edit';
+type Problem = { title?: string; detail?: string; errors?: Record<string, string[]> };
+type ApiErrorLike = { status: number; message: string; problem?: Problem };
+
+function asApiError(e: unknown): ApiErrorLike | null {
+  if (e && typeof e === 'object' && 'status' in e) {
+    const anyE = e as Record<string, unknown>;
+    if (typeof anyE.status === 'number') return anyE as ApiErrorLike;
+  }
+  return null;
+}
 
 @inject()
 export class UserDialog implements IDialogCustomElementViewModel {
@@ -17,13 +28,12 @@ export class UserDialog implements IDialogCustomElementViewModel {
   senha = '';
   tried = false;
   saving = false;
-  rowVersion?: string
+  rowVersion?: string;
 
-  // erros por campo vindos do servidor
   fieldErrors: Record<string, string | null> = { usuario: null, email: null, senha: null };
   formError: string | null = null;
 
-  activate(model: { mode: Mode; user?: any }) {
+  activate(model: { mode: Mode; user?: Partial<UserSummary> }) {
     this.mode = model?.mode ?? 'create';
     if (model?.user) {
       const u = model.user;
@@ -35,16 +45,15 @@ export class UserDialog implements IDialogCustomElementViewModel {
     }
   }
 
-  get emailOk() { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim().toLowerCase()); }
-  get usuarioOk() { return this.usuario.trim().length >= 2; }
-  get senhaOk()   { return this.mode === 'create' ? this.senha.length >= 8 : true; }
-  get formValid() { return this.usuarioOk && this.emailOk && this.senhaOk; }
+  get emailOk()  { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim().toLowerCase()); }
+  get usuarioOk(){ return this.usuario.trim().length >= 2; }
+  get senhaOk()  { return this.mode === 'create' ? this.senha.length >= 8 : true; }
+  get formValid(){ return this.usuarioOk && this.emailOk && this.senhaOk; }
 
-  private setFieldErrorsFromApi(err: ApiError) {
+  private setFieldErrorsFromApi(err: ApiErrorLike) {
     this.fieldErrors = { usuario: null, email: null, senha: null };
     const errors = err.problem?.errors;
     if (!errors) return;
-    // mapeia possíveis chaves do ModelState
     const pick = (k: string) => (errors[k]?.[0] ?? null);
     this.fieldErrors.usuario = pick('usuario') ?? pick('Usuario');
     this.fieldErrors.email   = pick('email')   ?? pick('Email');
@@ -73,21 +82,19 @@ export class UserDialog implements IDialogCustomElementViewModel {
         this.$dialog.ok({ mode: 'create' });
       } else {
         if (this.id == null) return;
-        await api.put(`/users/${this.id}`, { usuario, email, ativo: !!this.ativo,  rowVersion: this.rowVersion, });
+        await api.put(`/users/${this.id}`, { usuario, email, ativo: !!this.ativo, rowVersion: this.rowVersion });
         notify.success('Usuário atualizado com sucesso.');
         this.$dialog.ok({ mode: 'edit', id: this.id });
       }
-    } catch (err) {
-      if (err instanceof ApiError) {
-
-        this.setFieldErrorsFromApi(err);
-
-        this.formError = err.problem?.detail || err.problem?.title || err.message;
+    } catch (err: unknown) {
+      const apiErr = asApiError(err);
+      if (apiErr) {
+        this.setFieldErrorsFromApi(apiErr);
+        this.formError = apiErr.problem?.detail || apiErr.problem?.title || apiErr.message;
       } else {
         this.formError = 'Falha ao salvar.';
       }
-      // mantém o diálogo aberto
-      return;
+      return; // mantém o diálogo aberto
     } finally {
       this.saving = false;
     }

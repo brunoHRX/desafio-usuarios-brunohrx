@@ -9,8 +9,6 @@ import { showApiError } from '../shared/error-utils';
 import { notify } from '../shared/notify';  
 import { ApiError } from '../services/api';
 
-type CloseResult<T = any> = { wasCancelled: boolean; value?: T };
-
 @inject(IRouter, IDialogService)
 export class UserList {
   page = 1;
@@ -62,7 +60,7 @@ export class UserList {
       this.total = res.total ?? 0;
       this.page = res.page ?? this.page;
       this.pageSize = res.pageSize ?? this.pageSize;
-    } catch (e: any) {
+    } catch (e: unknown) {
       await this.handleApiError(e, 'Falha ao carregar usuários.');
     } finally {
       this.isLoading = false;
@@ -144,7 +142,7 @@ export class UserList {
   showApiError(e, fallbackMessage);
   if (e instanceof ApiError && e.status === 401) {
     this.error = 'Sessão expirada. Redirecionando para login…';
-    try { await this.router.load('login'); } catch {}
+    try { await this.router.load('login'); } catch { /* ignore */ }
     return;
   }
   // banner na página

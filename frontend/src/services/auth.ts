@@ -17,11 +17,16 @@ function getJwt()        { return localStorage.getItem('token'); }
 function getRefresh()    { return localStorage.getItem('refreshToken'); }
 function getExpiresAtMs(){ return Number(localStorage.getItem('expiresAt') || '0'); }
 function setAuth(jwt?: string|null, refresh?: string|null, expiresIn?: number|null) {
-  if (jwt !== undefined)     jwt ? localStorage.setItem('token', jwt) : localStorage.removeItem('token');
-  if (refresh !== undefined) refresh ? localStorage.setItem('refreshToken', refresh) : localStorage.removeItem('refreshToken');
+  if (jwt !== undefined) {
+    if (jwt) localStorage.setItem('token', jwt);
+    else localStorage.removeItem('token');
+  }
+  if (refresh !== undefined) {
+    if (refresh) localStorage.setItem('refreshToken', refresh);
+    else localStorage.removeItem('refreshToken');
+  }
   if (expiresIn !== undefined) {
     if (expiresIn && expiresIn > 0) {
-      // margem de segurança de 10s
       const exp = now() + (expiresIn - 10) * 1000;
       localStorage.setItem('expiresAt', String(exp));
     } else {
@@ -46,7 +51,7 @@ export const auth = {
     try {
       const refresh = getRefresh();
       if (refresh) await api.post('/auth/logout', refresh);
-    } catch {}
+    } catch { /* ignore */ }
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');

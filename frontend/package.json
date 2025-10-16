@@ -17,6 +17,7 @@
     "@aurelia/vite-plugin": "latest",
     "@tailwindcss/vite": "^4.1.14",
     "@types/node": "^22.10.2",
+    "@vitest/ui": "^2.1.9",
     "eslint": "^9.17.0",
     "globals": "^15.14.0",
     "jsdom": "^25.0.1",
