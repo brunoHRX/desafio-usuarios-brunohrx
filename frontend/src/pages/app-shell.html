@@ -1,19 +1,69 @@
-<!-- src/pages/app-shell.html -->
-<div class="min-h-screen grid grid-rows-[auto,1fr] bg-gray-50">
-  <header class="flex items-center justify-between px-6 py-3 border-b bg-white">
-    <div class="text-lg font-semibold">Painel</div>
-    <div class="flex items-center gap-3 text-sm">
-      <span if.bind="user">Olá, ${user?.usuario} (${user?.email})</span>
-      <button
-        class="border rounded px-3 py-1 hover:bg-gray-100"
-        click.trigger="logout()"
-      >
-        Sair
-      </button>
-    </div>
-  </header>
+<template>
+  <import from="../components/theme-toggle"></import>
 
-  <main class="p-6">
-    <au-viewport name="vp-main"></au-viewport>
-  </main>
-</div>
+  <div class="min-h-screen flex flex-col bg-background text-foreground">
+    <header
+      class="flex items-center justify-between h-14 px-4 border-b border-border bg-card text-card-foreground"
+    >
+      <div class="flex items-center gap-3">
+        <div class="text-base font-semibold tracking-tight">Painel</div>
+
+        <!-- NAV desktop -->
+        <nav class="hidden md:flex items-center gap-1 ml-4">
+          <a
+            repeat.for="item of nav"
+            load.bind="item.path"
+            aria-current.bind="isActive(item.path) ? 'page' : undefined"
+            class.bind="isActive(item.path)
+              ? 'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 bg-secondary text-secondary-foreground'
+              : 'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50'"
+          >
+            <span class="text-sm">${item.label}</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <theme-toggle></theme-toggle>
+        <span
+          if.bind="user"
+          class="hidden sm:inline text-sm text-muted-foreground"
+          >${user?.usuario}</span
+        >
+        <button
+          class="rounded-md px-3 py-1.5 text-sm bg-secondary text-secondary-foreground hover:bg-secondary/90 border border-border"
+          click.trigger="logout()"
+        >
+          Sair
+        </button>
+        <button
+          class="md:hidden rounded-md p-2 border border-border hover:bg-muted/60"
+          click.trigger="toggleMobile()"
+        >
+          ☰
+        </button>
+      </div>
+    </header>
+
+    <!-- NAV mobile -->
+    <div
+      class.bind="mobileOpen ? 'md:hidden border-b border-border bg-card' : 'hidden'"
+    >
+      <nav class="flex flex-col gap-1 p-3">
+        <a
+          repeat.for="item of nav"
+          load.bind="item.path"
+          class="rounded-md px-3 py-2 hover:bg-muted/60"
+          click.trigger="mobileOpen=false"
+          >${item.label}</a
+        >
+      </nav>
+    </div>
+
+    <main class="flex-1 p-6">
+      <div class="mx-auto w-full max-w-7xl">
+        <au-viewport name="vp-main"></au-viewport>
+      </div>
+    </main>
+  </div>
+</template>

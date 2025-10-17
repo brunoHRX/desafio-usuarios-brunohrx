@@ -1,77 +1,159 @@
-<section>
-  <div class="flex items-center justify-between mb-3">
-    <h2 class="text-lg font-semibold">Usuários</h2>
-    <button class="border rounded px-3 py-1" click.trigger="newUser()">
-      Novo
-    </button>
-  </div>
-
-  <form class="mb-3 flex gap-2" submit.trigger="onSearchSubmit($event)">
-    <input
-      class="border rounded px-2 py-1"
-      placeholder="Buscar por usuário ou e-mail"
-      value.bind="search"
-    />
-    <button class="border rounded px-3 py-1">Buscar</button>
-  </form>
-
-  <div if.bind="isLoading">Carregando...</div>
-  <p if.bind="error" class="text-red-600 text-sm">${error}</p>
-
-  <table if.bind="!isLoading && !error" class="w-full text-sm border-collapse">
-    <thead>
-      <tr class="border-b">
-        <th class="text-left py-2">Usuário</th>
-        <th class="text-left py-2">Email</th>
-        <th class="text-left py-2">Status</th>
-        <th class="text-right py-2"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr repeat.for="u of users" class="border-b">
-        <td class="py-2">${u.usuario}</td>
-        <td class="py-2">${u.email}</td>
-        <td class="py-2">${u.ativo ? 'Ativo' : 'Inativo'}</td>
-        <td class="py-2 text-right">
-          <button class="underline mr-3" click.trigger="editUser(u.id)">
-            Editar
-          </button>
-          <button
-            class="underline text-red-600"
-            click.trigger="deleteUser(u.id)"
-          >
-            Remover
-          </button>
-        </td>
-      </tr>
-      <tr if.bind="users.length === 0">
-        <td colspan="4" class="py-4 text-center text-slate-500">
-          Nenhum usuário encontrado.
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div
-    if.bind="!isLoading && total > pageSize"
-    class="mt-3 flex items-center justify-between"
+<template>
+  <section
+    class="p-4 bg-background text-foreground rounded-xl border border-border"
   >
-    <button
-      class="border rounded px-3 py-1"
-      disabled.bind="page === 1"
-      click.trigger="prevPage()"
+    <!-- Cabeçalho -->
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold tracking-tight">Usuários</h2>
+      <button
+        class="inline-flex items-center gap-1 rounded-md px-3.5 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+        click.trigger="newUser()"
+      >
+        <!-- Ícone + -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M12 4v16m8-8H4" />
+        </svg>
+        Novo
+      </button>
+    </div>
+
+    <!-- Busca -->
+    <form class="mb-4 flex gap-2" submit.trigger="onSearchSubmit($event)">
+      <input
+        class="flex-1 rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
+        placeholder="Buscar por usuário"
+        value.bind="search"
+      />
+      <button
+        class="inline-flex items-center justify-center rounded-md px-5 py-2 text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/90 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+      >
+        Buscar
+      </button>
+    </form>
+
+    <!-- Feedbacks -->
+    <div if.bind="isLoading" class="text-sm text-muted-foreground">
+      Carregando...
+    </div>
+    <p
+      if.bind="error"
+      class="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2"
     >
-      Anterior
-    </button>
-    <span class="text-sm"
-      >Página ${page} de ${Math.ceil(total / pageSize)}</span
+      ${error}
+    </p>
+
+    <!-- Tabela -->
+    <div class="overflow-x-auto rounded-lg border border-border">
+      <table
+        if.bind="!isLoading && !error"
+        class="w-full text-sm border-collapse"
+      >
+        <thead class="bg-muted/50 border-b border-border">
+          <tr>
+            <th class="text-left py-2 px-3 font-medium">Usuário</th>
+            <th class="text-left py-2 px-3 font-medium">Email</th>
+            <th class="text-left py-2 px-3 font-medium">Status</th>
+            <th class="text-right py-2 px-3 font-medium">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            repeat.for="u of users"
+            class="border-b border-border hover:bg-muted/40 transition-colors"
+          >
+            <td class="py-2 px-3">${u.usuario}</td>
+            <td class="py-2 px-3">${u.email}</td>
+            <td class="py-2 px-3">
+              <span
+                class.bind="u.ativo
+                  ? 'text-sm text-green-600 dark:text-green-400'
+                  : 'text-sm text-muted-foreground'"
+              >
+                ${u.ativo ? 'Ativo' : 'Inativo'}
+              </span>
+            </td>
+            <td class="py-2 px-3 text-right">
+              <!-- Botão Editar -->
+              <button
+                class="inline-flex items-center justify-center rounded-md p-1.5 text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors mr-1.5"
+                title="Editar"
+                click.trigger="editUser(u.id)"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M15.232 5.232l3.536 3.536M4 20h4.586a1 1 0 00.707-.293l10.414-10.414a2 2 0 000-2.828l-2.172-2.172a2 2 0 00-2.828 0L4 14.586A1 1 0 004 15.293V20z"
+                  />
+                </svg>
+              </button>
+
+              <!-- Botão Remover -->
+              <button
+                class="inline-flex items-center justify-center rounded-md p-1.5 text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/30 focus-visible:ring-2 focus-visible:ring-destructive transition-colors"
+                title="Remover"
+                click.trigger="deleteUser(u.id)"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M3 6h18M8 6v14a2 2 0 002 2h4a2 2 0 002-2V6M10 10v8M14 10v8M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"
+                  />
+                </svg>
+              </button>
+            </td>
+          </tr>
+          <tr if.bind="users.length === 0">
+            <td colspan="4" class="py-4 text-center text-muted-foreground">
+              Nenhum usuário encontrado.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginação -->
+    <div
+      if.bind="!isLoading && total > pageSize"
+      class="mt-4 flex items-center justify-between text-sm"
     >
-    <button
-      class="border rounded px-3 py-1"
-      disabled.bind="page * pageSize >= total"
-      click.trigger="nextPage()"
-    >
-      Próxima
-    </button>
-  </div>
-</section>
+      <button
+        class="inline-flex items-center rounded-md px-3 py-1.5 bg-transparent text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
+        disabled.bind="page === 1"
+        click.trigger="prevPage()"
+      >
+        Anterior
+      </button>
+
+      <span class="text-muted-foreground">
+        Página ${page} de ${Math.ceil(total / pageSize)}
+      </span>
+
+      <button
+        class="inline-flex items-center rounded-md px-3 py-1.5 bg-transparent text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
+        disabled.bind="page * pageSize >= total"
+        click.trigger="nextPage()"
+      >
+        Próxima
+      </button>
+    </div>
+  </section>
+</template>

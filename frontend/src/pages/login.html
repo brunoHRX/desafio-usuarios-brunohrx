@@ -1,46 +1,71 @@
-<section class="min-h-screen grid place-items-center p-4">
-  <div class="w-full max-w-sm border rounded-xl p-6 shadow-sm">
-    <h1 class="text-xl font-semibold mb-4">Entrar</h1>
+<template>
+  <section
+    class="min-h-screen grid place-items-center p-4 bg-background text-foreground"
+  >
+    <div
+      class="w-full max-w-sm bg-card text-card-foreground border border-border rounded-xl shadow-sm p-6"
+    >
+      <h1 class="text-xl font-semibold tracking-tight mb-4">Entrar</h1>
 
-    <form submit.trigger="submit()">
-      <label class="block mb-3">
-        <span class="text-sm">Usuário</span>
-        <input
-          class="w-full border rounded-md p-2"
-          placeholder="seu.usuario"
-          value.bind="usuario"
-          required
-        />
-      </label>
-
-      <label class="block mb-4">
-        <span class="text-sm">Senha</span>
-        <input
-          class="w-full border rounded-md p-2"
-          type="password"
-          placeholder="••••••••"
-          value.bind="senha"
-          required
-        />
-      </label>
-
-      <button
-        class="w-full rounded-md border px-4 py-2"
-        disabled.bind="isLoading"
+      <!-- Erro geral -->
+      <p
+        if.bind="error"
+        class="mb-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2"
       >
-        ${isLoading ? 'Entrando...' : 'Entrar'}
-      </button>
-    </form>
+        ${error}
+      </p>
 
-    <div class="text-sm mt-3 flex justify-between">
-      <button class="underline" type="button" click.trigger="goForgot()">
-        Esqueci minha senha
-      </button>
-      <button class="underline" type="button" click.trigger="goSignup()">
-        Criar conta
-      </button>
+      <form submit.trigger="submit()" class="space-y-4" novalidate>
+        <!-- Usuário -->
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground">Usuário</span>
+          <input
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
+            placeholder="seu.usuario"
+            value.bind="usuario"
+            required
+          />
+        </label>
+
+        <!-- Senha -->
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground">Senha</span>
+          <input
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
+            type="password"
+            placeholder="••••••••"
+            value.bind="senha"
+            required
+          />
+        </label>
+
+        <!-- Botão principal -->
+        <button
+          class="w-full inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
+          disabled.bind="isLoading"
+        >
+          ${isLoading ? 'Entrando...' : 'Entrar'}
+        </button>
+      </form>
+
+      <!-- Ações secundárias -->
+      <div class="text-sm mt-4 flex justify-between">
+        <button
+          class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+          type="button"
+          click.trigger="goForgot()"
+        >
+          Esqueci minha senha
+        </button>
+
+        <button
+          class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+          type="button"
+          click.trigger="goSignup()"
+        >
+          Criar conta
+        </button>
+      </div>
     </div>
-
-    <p if.bind="error" class="mt-3 text-red-600 text-sm">${error}</p>
-  </div>
-</section>
+  </section>
+</template>

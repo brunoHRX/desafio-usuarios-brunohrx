@@ -1,0 +1,255 @@
+<template>
+  <section
+    class="max-w-4xl mx-auto p-6 bg-card text-card-foreground border border-border rounded-xl shadow-sm"
+  >
+    <header class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold tracking-tight">Configurações</h2>
+
+      <!-- Abas -->
+      <nav
+        class="inline-flex rounded-lg border border-border overflow-hidden"
+        aria-label="Abas de configurações"
+      >
+        <button
+          class.bind="activeTab === 'profile'
+            ? 'px-3 py-1.5 text-sm bg-secondary text-secondary-foreground'
+            : 'px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted/50'"
+          click.trigger="setTab('profile')"
+        >
+          Perfil
+        </button>
+        <button
+          class.bind="activeTab === 'inactive'
+            ? 'px-3 py-1.5 text-sm bg-secondary text-secondary-foreground'
+            : 'px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted/50'"
+          click.trigger="setTab('inactive')"
+        >
+          Usuários inativos
+        </button>
+      </nav>
+    </header>
+
+    <!-- Feedback geral -->
+    <p
+      if.bind="error"
+      class="mb-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2"
+    >
+      ${error}
+    </p>
+    <p
+      if.bind="feedback"
+      class="mb-3 text-sm text-green-700 dark:text-green-400 bg-green-500/10 border border-green-500/30 rounded-md px-3 py-2"
+    >
+      ${feedback}
+    </p>
+
+    <!-- TAB: Perfil -->
+    <section if.bind="activeTab === 'profile'" class="space-y-4">
+      <form submit.trigger="saveProfile($event)" class="space-y-4" novalidate>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label class="block space-y-1">
+            <span class="text-xs sm:text-sm text-muted-foreground"
+              >Usuário</span
+            >
+            <input
+              class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
+              value.bind="profile.usuario"
+              required
+              placeholder="seu.usuario"
+            />
+          </label>
+
+          <label class="block space-y-1">
+            <span class="text-xs sm:text-sm text-muted-foreground">E-mail</span>
+            <input
+              class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
+              type="email"
+              value.bind="profile.email"
+              required
+              placeholder="voce@exemplo.com"
+            />
+          </label>
+        </div>
+
+        <div class="rounded-lg border border-border p-4 space-y-3">
+          <h3 class="text-sm font-medium">Alterar senha (opcional)</h3>
+
+          <label class="block space-y-1">
+            <span class="text-xs sm:text-sm text-muted-foreground"
+              >Senha atual</span
+            >
+            <input
+              class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              type="password"
+              value.bind="profile.senhaAtual"
+              placeholder="••••••••"
+            />
+          </label>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="block space-y-1">
+              <span class="text-xs sm:text-sm text-muted-foreground"
+                >Nova senha</span
+              >
+              <input
+                class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                type="password"
+                minlength="8"
+                value.bind="profile.novaSenha"
+                placeholder="••••••••"
+              />
+            </label>
+
+            <label class="block space-y-1">
+              <span class="text-xs sm:text-sm text-muted-foreground"
+                >Confirmar nova senha</span
+              >
+              <input
+                class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                type="password"
+                minlength="8"
+                value.bind="profile.confirmaSenha"
+                placeholder="••••••••"
+              />
+            </label>
+          </div>
+
+          <p if.bind="!senhaOk" class="text-xs text-destructive">
+            Nova senha deve ter 8+ caracteres e coincidir com a confirmação.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button
+            class="inline-flex items-center rounded-md px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
+            disabled.bind="isSaving"
+          >
+            ${isSaving ? 'Salvando...' : 'Salvar alterações'}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- TAB: Inativos -->
+    <section if.bind="activeTab === 'inactive'" class="space-y-4">
+      <form class="flex gap-2" submit.trigger="onSearchSubmit($event)">
+        <input
+          class="flex-1 rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
+          placeholder="Buscar por usuário ou e-mail"
+          value.bind="search"
+        />
+        <button
+          class="rounded-md px-4 py-2 text-sm bg-secondary text-secondary-foreground hover:bg-secondary/90 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+        >
+          Buscar
+        </button>
+      </form>
+
+      <div if.bind="isLoadingInactive" class="text-sm text-muted-foreground">
+        Carregando...
+      </div>
+
+      <div class="overflow-x-auto rounded-lg border border-border">
+        <table
+          if.bind="!isLoadingInactive"
+          class="w-full text-sm border-collapse"
+        >
+          <thead class="bg-muted/50 border-b border-border">
+            <tr>
+              <th class="text-left py-2 px-3">Usuário</th>
+              <th class="text-left py-2 px-3">E-mail</th>
+              <th class="text-left py-2 px-3">Motivo</th>
+              <th class="text-left py-2 px-3">Desativado em</th>
+              <th class="text-right py-2 px-3">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              repeat.for="u of users"
+              class="border-b border-border hover:bg-muted/40 transition-colors"
+            >
+              <td class="py-2 px-3">${u.usuario}</td>
+              <td class="py-2 px-3">${u.email}</td>
+              <td class="py-2 px-3 text-muted-foreground">
+                ${u.motivo ?? '-'}
+              </td>
+              <td class="py-2 px-3 text-muted-foreground">
+                ${u.desativadoEm ?? '-'}
+              </td>
+              <td class="py-2 px-3 text-right">
+                <!-- Reativar -->
+                <button
+                  class="inline-flex items-center justify-center rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors mr-1.5"
+                  title="Reativar"
+                  click.trigger="reactivateUser(u.id)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M3 12a9 9 0 1 0 9-9v3M3 3v6h6" />
+                  </svg>
+                  Reativar
+                </button>
+
+                <!-- Remover definitivamente -->
+                <button
+                  class="inline-flex items-center justify-center rounded-md px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/30 focus-visible:ring-2 focus-visible:ring-destructive transition-colors"
+                  title="Remover"
+                  click.trigger="deleteUser(u.id)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M3 6h18M8 6v14a2 2 0 002 2h4a2 2 0 002-2V6M10 10v8M14 10v8M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"
+                    />
+                  </svg>
+                  Remover
+                </button>
+              </td>
+            </tr>
+
+            <tr if.bind="users.length === 0">
+              <td colspan="5" class="py-4 text-center text-muted-foreground">
+                Nenhum usuário inativo.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        if.bind="total > pageSize"
+        class="flex items-center justify-between text-sm"
+      >
+        <button
+          class="inline-flex items-center rounded-md px-3 py-1.5 bg-transparent text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
+          disabled.bind="page === 1"
+          click.trigger="prevPage()"
+        >
+          Anterior
+        </button>
+        <span class="text-muted-foreground"
+          >Página ${page} de ${Math.ceil(total / pageSize)}</span
+        >
+        <button
+          class="inline-flex items-center rounded-md px-3 py-1.5 bg-transparent text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
+          disabled.bind="page * pageSize >= total"
+          click.trigger="nextPage()"
+        >
+          Próxima
+        </button>
+      </div>
+    </section>
+  </section>
+</template>

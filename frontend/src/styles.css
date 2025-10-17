@@ -1,2 +1,168 @@
 @import "tailwindcss";
 
+/* ativa variante dark com a classe .dark na <html> ou <body> */
+@custom-variant dark (&:is(.dark *));
+
+/* mapeia tokens do Tailwind (v4) -> CSS variables do seu design */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* charts e sidebar */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* raios padrões */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ======== LIGHT ======== */
+:root {
+  --radius: 0.625rem;
+
+  /* base */
+  --background: #F9F9F9;         /* branco-fundo */
+  --foreground: #362854;         /* roxo-escuro (texto) */
+
+  /* superfícies */
+  --card: #FFFFFF;
+  --card-foreground: #362854;
+  --popover: #FFFFFF;
+  --popover-foreground: #362854;
+
+  /* ações e estados */
+  --primary: #6C4585;            /* roxo-principal */
+  --primary-foreground: #F9F9F9; /* contraste claro */
+  --secondary: #A98AB3;          /* lilás */
+  --secondary-foreground: #362854;
+
+  --muted: #CCC9CF;              /* cinza-claro */
+  --muted-foreground: #362854;
+  --accent: #DD52AF;             /* rosa-vivo */
+  --accent-foreground: #F9F9F9;
+
+  /* destrutivo (pode ajustar depois se quiser um vermelho puro) */
+  --destructive: #DD52AF;
+
+  /* contornos / foco */
+  --border: #CCC9CF;
+  --input: #CCC9CF;
+  --ring: #6A5EB9;               /* foco com indigo */
+
+  /* gráficos (ordem sugestiva) */
+  --chart-1: #6C4585;  /* roxo */
+  --chart-2: #6A5EB9;  /* indigo */
+  --chart-3: #7CADD7;  /* azul claro */
+  --chart-4: #DD52AF;  /* rosa */
+  --chart-5: #A98AB3;  /* lilás */
+
+  /* sidebar */
+  --sidebar: #F9F9F9;
+  --sidebar-foreground: #362854;
+  --sidebar-primary: #6C4585;
+  --sidebar-primary-foreground: #F9F9F9;
+  --sidebar-accent: #6A5EB9;
+  --sidebar-accent-foreground: #F9F9F9;
+  --sidebar-border: #CCC9CF;
+  --sidebar-ring: #6A5EB9;
+}
+
+/* ======== DARK (classe .dark) ======== */
+.dark {
+  /* base */
+  --background: #362854;         /* roxo-escuro como base */
+  --foreground: #F9F9F9;
+
+  /* superfícies */
+  --card: #2A2144;               /* tom mais escuro para cards */
+  --card-foreground: #F9F9F9;
+  --popover: #2A2144;
+  --popover-foreground: #F9F9F9;
+
+  /* ações e estados */
+  --primary: #A98AB3;            /* lilás (melhor contraste no dark) */
+  --primary-foreground: #1B1430; /* texto sobre primary */
+  --secondary: #6A5EB9;          /* indigo */
+  --secondary-foreground: #F9F9F9;
+
+  --muted: #2E2740;
+  --muted-foreground: #A98AB3;
+  --accent: #7CADD7;             /* azul claro para “realces” no dark */
+  --accent-foreground: #1B1430;
+
+  --destructive: #B63E82;        /* rosa mais fechado para alertas */
+
+  /* contornos / foco */
+  --border: rgba(255, 255, 255, 0.10);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #7CADD7;
+
+  /* gráficos (variantes pensadas para fundo escuro) */
+  --chart-1: #A98AB3;
+  --chart-2: #7CADD7;
+  --chart-3: #6A5EB9;
+  --chart-4: #DD52AF;
+  --chart-5: #CCC9CF;
+
+  /* sidebar */
+  --sidebar: #2A2144;
+  --sidebar-foreground: #F9F9F9;
+  --sidebar-primary: #A98AB3;
+  --sidebar-primary-foreground: #1B1430;
+  --sidebar-accent: #6A5EB9;
+  --sidebar-accent-foreground: #F9F9F9;
+  --sidebar-border: rgba(255, 255, 255, 0.10);
+  --sidebar-ring: #7CADD7;
+}
+
+/* reset base */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

@@ -1,74 +1,96 @@
 <template>
-  <section class="min-h-screen grid place-items-center p-4">
-    <div class="w-full max-w-sm border rounded-xl p-6 shadow-sm bg-white">
-      <h1 class="text-xl font-semibold mb-4">Criar conta</h1>
+  <section
+    class="min-h-screen grid place-items-center p-4 bg-background text-foreground"
+  >
+    <div
+      class="w-full max-w-sm bg-card text-card-foreground border border-border rounded-xl shadow-sm p-6"
+    >
+      <h1 class="text-xl font-semibold tracking-tight mb-2">Criar conta</h1>
 
+      <!-- Erro geral -->
       <p
         if.bind="error"
-        class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2"
+        class="mb-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2"
       >
         ${error}
       </p>
 
-      <form submit.trigger="submit()" class="space-y-3" novalidate>
-        <label class="block">
-          <span class="text-sm">Usuário</span>
+      <form submit.trigger="submit()" class="space-y-4" novalidate>
+        <!-- Usuário -->
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground">Usuário</span>
           <input
-            class="w-full border rounded-md p-2"
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
             value.bind="usuario"
             required
+            placeholder="Ex.: joaosilva"
           />
-          <small if.bind="tried && !usuarioOk" class="text-red-600 text-xs"
-            >Mínimo 2 caracteres.</small
-          >
+          <small if.bind="tried && !usuarioOk" class="text-xs text-destructive">
+            Mínimo 2 caracteres.
+          </small>
         </label>
 
-        <label class="block">
-          <span class="text-sm">E-mail</span>
+        <!-- E-mail -->
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground">E-mail</span>
           <input
-            class="w-full border rounded-md p-2"
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
             type="email"
             value.bind="email"
             required
+            placeholder="voce@exemplo.com"
           />
-          <small if.bind="tried && !emailOk" class="text-red-600 text-xs"
-            >E-mail inválido.</small
-          >
+          <small if.bind="tried && !emailOk" class="text-xs text-destructive">
+            E-mail inválido.
+          </small>
         </label>
 
-        <label class="block">
-          <span class="text-sm">Senha</span>
+        <!-- Senha -->
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground">Senha</span>
           <input
-            class="w-full border rounded-md p-2"
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
             type="password"
             value.bind="senha"
+            minlength="8"
             required
+            placeholder="••••••••"
           />
         </label>
 
-        <label class="block">
-          <span class="text-sm">Confirmar senha</span>
+        <!-- Confirmar senha -->
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground"
+            >Confirmar senha</span
+          >
           <input
-            class="w-full border rounded-md p-2"
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
             type="password"
             value.bind="confirmacaoSenha"
+            minlength="8"
             required
+            placeholder="••••••••"
           />
-          <small if.bind="tried && !senhaOk" class="text-red-600 text-xs"
-            >Senha precisa ter 8+ e bater com a confirmação.</small
-          >
+          <small if.bind="tried && !senhaOk" class="text-xs text-destructive">
+            Senha precisa ter 8+ e bater com a confirmação.
+          </small>
         </label>
 
+        <!-- Botão principal -->
         <button
-          class="w-full rounded-md border px-4 py-2"
+          class="w-full inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
           disabled.bind="isLoading"
         >
           ${isLoading ? 'Criando...' : 'Criar conta'}
         </button>
       </form>
 
-      <div class="text-sm mt-3 flex justify-between">
-        <button class="underline" type="button" click.trigger="goLogin()">
+      <div class="text-sm mt-4 flex justify-between">
+        <button
+          class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+          type="button"
+          click.trigger="goLogin()"
+        >
           Já tenho conta
         </button>
       </div>

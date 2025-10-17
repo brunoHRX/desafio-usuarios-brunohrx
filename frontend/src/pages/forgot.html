@@ -1,43 +1,55 @@
 <template>
-  <section class="min-h-screen grid place-items-center p-4">
-    <div class="w-full max-w-sm border rounded-xl p-6 shadow-sm bg-white">
-      <h1 class="text-xl font-semibold mb-4">Esqueci minha senha</h1>
+  <section
+    class="min-h-screen grid place-items-center p-4 bg-background text-foreground"
+  >
+    <div
+      class="w-full max-w-sm bg-card text-card-foreground border border-border rounded-xl shadow-sm p-6"
+    >
+      <h1 class="text-xl font-semibold tracking-tight mb-2">
+        Esqueci minha senha
+      </h1>
 
-      <p class="text-sm text-slate-600 mb-3">
+      <p class="text-sm text-muted-foreground mb-4">
         Informe seu e-mail para receber um link de redefinição.
       </p>
 
+      <!-- Erro geral -->
       <p
         if.bind="error"
-        class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2"
+        class="mb-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2"
       >
         ${error}
       </p>
 
-      <form submit.trigger="submit()" class="space-y-3" novalidate>
-        <label class="block">
-          <span class="text-sm">E-mail</span>
+      <form submit.trigger="submit()" class="space-y-4" novalidate>
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground">E-mail</span>
           <input
-            class="w-full border rounded-md p-2"
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
             type="email"
             value.bind="email"
             required
+            placeholder="voce@exemplo.com"
           />
-          <small if.bind="tried && !emailOk" class="text-red-600 text-xs"
-            >E-mail inválido.</small
-          >
+          <small if.bind="tried && !emailOk" class="text-xs text-destructive">
+            E-mail inválido.
+          </small>
         </label>
 
         <button
-          class="w-full rounded-md border px-4 py-2"
+          class="w-full inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
           disabled.bind="isLoading"
         >
           ${isLoading ? 'Enviando...' : 'Enviar'}
         </button>
       </form>
 
-      <div class="text-sm mt-3">
-        <button class="underline" type="button" click.trigger="goLogin()">
+      <div class="text-sm mt-4">
+        <button
+          class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+          type="button"
+          click.trigger="goLogin()"
+        >
           Voltar ao login
         </button>
       </div>

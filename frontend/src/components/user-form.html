@@ -1,111 +1,147 @@
 <template>
   <section class="max-w-xl mx-auto p-4">
-    <h3 class="text-xl font-semibold mb-4">
-      ${creating ? 'Novo usuário' : 'Editar usuário'}
-    </h3>
+    <div
+      class="bg-card text-card-foreground border border-border rounded-xl shadow-sm p-5 sm:p-6"
+    >
+      <h3 class="text-lg font-semibold tracking-tight mb-4">
+        ${creating ? 'Novo usuário' : 'Editar usuário'}
+      </h3>
 
-    <form submit.trigger="save($event)" class="space-y-3" novalidate>
-      <!-- CRIAR -->
-      <div if.bind="creating" class="space-y-3">
-        <label class="block">
-          <span class="text-sm">Usuário</span>
-          <input
-            class="w-full border rounded-md p-2"
-            value.bind="modelCreate.usuario"
-            required
-          />
-        </label>
-
-        <label class="block">
-          <span class="text-sm">E-mail</span>
-          <input
-            class="w-full border rounded-md p-2"
-            type="email"
-            value.bind="modelCreate.email"
-            required
-          />
-        </label>
-
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block">
-            <span class="text-sm">Senha (min. 8)</span>
+      <form submit.trigger="save($event)" class="space-y-4" novalidate>
+        <!-- CRIAR -->
+        <div if.bind="creating" class="space-y-3">
+          <label class="block space-y-1">
+            <span class="text-xs sm:text-sm text-muted-foreground"
+              >Usuário</span
+            >
             <input
-              class="w-full border rounded-md p-2"
-              type="password"
-              value.bind="modelCreate.senha"
+              class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
+              value.bind="modelCreate.usuario"
               required
+              placeholder="Ex.: joaosilva"
             />
           </label>
-          <label class="block">
-            <span class="text-sm">Confirmar senha</span>
+
+          <label class="block space-y-1">
+            <span class="text-xs sm:text-sm text-muted-foreground">E-mail</span>
             <input
-              class="w-full border rounded-md p-2"
-              type="password"
-              value.bind="modelCreate.confirmacaoSenha"
+              class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
+              type="email"
+              value.bind="modelCreate.email"
               required
+              placeholder="voce@exemplo.com"
             />
           </label>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="block space-y-1">
+              <span class="text-xs sm:text-sm text-muted-foreground"
+                >Senha (min. 8)</span
+              >
+              <input
+                class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
+                type="password"
+                value.bind="modelCreate.senha"
+                minlength="8"
+                required
+                placeholder="••••••••"
+              />
+            </label>
+
+            <label class="block space-y-1">
+              <span class="text-xs sm:text-sm text-muted-foreground"
+                >Confirmar senha</span
+              >
+              <input
+                class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
+                type="password"
+                value.bind="modelCreate.confirmacaoSenha"
+                minlength="8"
+                required
+                placeholder="••••••••"
+              />
+            </label>
+          </div>
         </div>
-      </div>
 
-      <!-- EDITAR -->
-      <div if.bind="!creating" class="space-y-3">
-        <label class="block">
-          <span class="text-sm">Usuário</span>
-          <input
-            class="w-full border rounded-md p-2"
-            value.bind="modelEdit.usuario"
-            required
-          />
-        </label>
+        <!-- EDITAR -->
+        <div if.bind="!creating" class="space-y-3">
+          <label class="block space-y-1">
+            <span class="text-xs sm:text-sm text-muted-foreground"
+              >Usuário</span
+            >
+            <input
+              class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
+              value.bind="modelEdit.usuario"
+              required
+              placeholder="Ex.: joaosilva"
+            />
+          </label>
 
-        <label class="block">
-          <span class="text-sm">E-mail</span>
-          <input
-            class="w-full border rounded-md p-2"
-            type="email"
-            value.bind="modelEdit.email"
-            required
-          />
-        </label>
+          <label class="block space-y-1">
+            <span class="text-xs sm:text-sm text-muted-foreground">E-mail</span>
+            <input
+              class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
+              type="email"
+              value.bind="modelEdit.email"
+              required
+              placeholder="voce@exemplo.com"
+            />
+          </label>
 
-        <label class="inline-flex items-center gap-2">
-          <input type="checkbox" checked.bind="modelEdit.ativo" />
-          <span class="text-sm">Ativo</span>
-        </label>
+          <label class="inline-flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              class="h-4 w-4 rounded border-input accent-primary"
+              checked.bind="modelEdit.ativo"
+            />
+            <span class="text-sm">Ativo</span>
+          </label>
 
-        <!-- mostra rowVersion atual -->
-        <input type="hidden" value.bind="modelEdit.rowVersion" />
-        <p class="text-[11px] text-slate-500">
-          rowVersion: ${modelEdit.rowVersion}
+          <!-- mostra rowVersion atual -->
+          <input type="hidden" value.bind="modelEdit.rowVersion" />
+          <p class="text-[11px] text-muted-foreground">
+            rowVersion: ${modelEdit.rowVersion}
+          </p>
+        </div>
+
+        <!-- Feedbacks -->
+        <div
+          if.bind="tried && !formValid"
+          class="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2"
+        >
+          ${validationMessage}
+        </div>
+        <p
+          if.bind="error"
+          class="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2"
+        >
+          ${error}
         </p>
-      </div>
+        <p if.bind="debug" class="text-xs text-muted-foreground">
+          DEBUG: ${debug}
+        </p>
 
-      <!-- Feedbacks -->
-      <div if.bind="tried && !formValid" class="text-red-600 text-sm">
-        ${validationMessage}
-      </div>
-      <p if.bind="error" class="text-red-600 text-sm">${error}</p>
-      <p if.bind="debug" class="text-xs text-slate-500">DEBUG: ${debug}</p>
+        <!-- Ações -->
+        <div class="flex gap-2 pt-1">
+          <button
+            type="submit"
+            class="inline-flex items-center rounded-md px-3 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
+            disabled.bind="saving"
+          >
+            ${saving ? 'Salvando...' : 'Salvar'}
+          </button>
 
-      <div class="flex gap-2 pt-1">
-        <!-- não desabilito o botão; deixo o save() validar e mostrar motivo -->
-        <button
-          type="submit"
-          class="border rounded px-3 py-1"
-          disabled.bind="saving"
-        >
-          ${saving ? 'Salvando...' : 'Salvar'}
-        </button>
-        <button
-          type="button"
-          class="border rounded px-3 py-1"
-          click.trigger="goBack()"
-          disabled.bind="saving"
-        >
-          Cancelar
-        </button>
-      </div>
-    </form>
+          <button
+            type="button"
+            class="inline-flex items-center rounded-md px-3 py-2 text-sm bg-transparent text-foreground hover:bg-muted/60 border border-border focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
+            click.trigger="goBack()"
+            disabled.bind="saving"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
   </section>
 </template>

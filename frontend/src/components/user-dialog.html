@@ -1,88 +1,115 @@
 <template>
-  <div class="fixed inset-0 bg-black/30 flex items-center justify-center">
-    <div class="bg-white rounded-xl shadow-xl p-6 w-[420px] max-w-full">
-      <h3 class="text-lg font-semibold mb-4">
+  <!-- Overlay -->
+  <div
+    class="fixed inset-0 z-40 bg-black/40 dark:bg-black/60 backdrop-blur-[1px] flex items-center justify-center p-4"
+  >
+    <!-- Dialog / Card -->
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="user-dialog-title"
+      class="z-50 w-full max-w-lg bg-card text-card-foreground rounded-xl border border-border shadow-xl p-5 sm:p-6"
+    >
+      <h3
+        id="user-dialog-title"
+        class="text-base sm:text-lg font-semibold mb-4"
+      >
         ${mode === 'create' ? 'Novo usuário' : 'Editar usuário'}
       </h3>
 
+      <!-- Alerta de erro do form -->
       <p
         if.bind="formError"
-        class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2"
+        class="mb-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2"
       >
         ${formError}
       </p>
 
       <form submit.trigger="ok($event)" class="space-y-3" novalidate>
-        <label class="block">
-          <span class="text-sm">Usuário</span>
+        <!-- Usuário -->
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground">Usuário</span>
           <input
-            class="border rounded px-2 py-1 w-full"
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
             value.bind="usuario"
             required
             disabled.bind="saving"
+            placeholder="Ex.: joaosilva"
           />
-          <small if.bind="tried && !usuarioOk" class="text-red-600 text-xs"
-            >Usuário deve ter ao menos 2 caracteres.</small
-          >
-          <small if.bind="fieldErrors.usuario" class="text-red-600 text-xs"
-            >${fieldErrors.usuario}</small
-          >
+          <small if.bind="tried && !usuarioOk" class="text-xs text-destructive">
+            Usuário deve ter ao menos 2 caracteres.
+          </small>
+          <small if.bind="fieldErrors.usuario" class="text-xs text-destructive">
+            ${fieldErrors.usuario}
+          </small>
         </label>
 
-        <label class="block">
-          <span class="text-sm">E-mail</span>
+        <!-- E-mail -->
+        <label class="block space-y-1">
+          <span class="text-xs sm:text-sm text-muted-foreground">E-mail</span>
           <input
-            class="border rounded px-2 py-1 w-full"
+            class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
             type="email"
             value.bind="email"
             required
             disabled.bind="saving"
+            placeholder="voce@exemplo.com"
           />
-          <small if.bind="tried && !emailOk" class="text-red-600 text-xs"
-            >E-mail inválido.</small
-          >
-          <small if.bind="fieldErrors.email" class="text-red-600 text-xs"
-            >${fieldErrors.email}</small
-          >
+          <small if.bind="tried && !emailOk" class="text-xs text-destructive">
+            E-mail inválido.
+          </small>
+          <small if.bind="fieldErrors.email" class="text-xs text-destructive">
+            ${fieldErrors.email}
+          </small>
         </label>
 
+        <!-- Senha (apenas create) -->
         <div if.bind="mode==='create'">
-          <label class="block">
-            <span class="text-sm">Senha</span>
+          <label class="block space-y-1">
+            <span class="text-xs sm:text-sm text-muted-foreground">Senha</span>
             <input
-              class="border rounded px-2 py-1 w-full"
+              class="w-full rounded-md bg-background text-foreground border border-input px-3 py-2 placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow disabled:opacity-60"
               type="password"
               value.bind="senha"
               minlength="8"
               required
               disabled.bind="saving"
+              placeholder="Mínimo de 8 caracteres"
             />
-            <small if.bind="tried && !senhaOk" class="text-red-600 text-xs"
-              >Senha deve ter pelo menos 8 caracteres.</small
-            >
-            <small if.bind="fieldErrors.senha" class="text-red-600 text-xs"
-              >${fieldErrors.senha}</small
-            >
+            <small if.bind="tried && !senhaOk" class="text-xs text-destructive">
+              Senha deve ter pelo menos 8 caracteres.
+            </small>
+            <small if.bind="fieldErrors.senha" class="text-xs text-destructive">
+              ${fieldErrors.senha}
+            </small>
           </label>
         </div>
 
-        <label class="flex items-center gap-2" if.bind="mode==='edit'">
-          <input type="checkbox" checked.bind="ativo" disabled.bind="saving" />
-          <span>Ativo</span>
+        <!-- Ativo (apenas edit) -->
+        <label class="flex items-center gap-2 pt-1" if.bind="mode==='edit'">
+          <input
+            type="checkbox"
+            class="h-4 w-4 rounded border-input accent-primary"
+            checked.bind="ativo"
+            disabled.bind="saving"
+          />
+          <span class="text-sm">Ativo</span>
         </label>
 
-        <div class="flex justify-end gap-2 pt-2">
+        <!-- Ações -->
+        <div class="flex justify-end gap-2 pt-3">
           <button
             type="button"
-            class="px-3 py-1 rounded border"
+            class="inline-flex items-center rounded-md px-3 py-2 text-sm bg-transparent text-foreground hover:bg-muted/60 border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
             click.trigger="cancel()"
             disabled.bind="saving"
           >
             Cancelar
           </button>
+
           <button
             type="submit"
-            class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+            class="inline-flex items-center rounded-md px-3 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors disabled:opacity-60"
             disabled.bind="saving"
           >
             ${saving ? 'Salvando...' : 'Salvar'}

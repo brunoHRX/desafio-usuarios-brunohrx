@@ -4,7 +4,8 @@ import { RouterConfiguration } from '@aurelia/router';
 import { DialogConfigurationStandard } from '@aurelia/dialog';
 import { App } from './app';
 import './styles.css';
-import { ToastCenter } from './shared/toast-center'; // ⬅️
+import { ToastCenter } from './shared/toast-center';
+import { ThemeToggle } from './components/theme-toggle'
 
 const host = document.querySelector('#app') as HTMLElement;
 if (!host) {
@@ -16,7 +17,8 @@ Aurelia
   .register(
     RouterConfiguration.customize({ useUrlFragmentHash: false }),
     DialogConfigurationStandard,
-    ToastCenter
+    ToastCenter,
+    ThemeToggle
   )
   .app({ host, component: App })                     
   .start();
