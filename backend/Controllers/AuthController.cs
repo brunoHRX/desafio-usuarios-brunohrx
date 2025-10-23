@@ -1,5 +1,4 @@
 ﻿using desafio_usuarios_brunohrx.Data;
-using desafio_usuarios_brunohrx.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -16,15 +15,19 @@ namespace desafio_usuarios_brunohrx.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/auth")]
-public class AuthController : ControllerBase {
+public class AuthController : ControllerBase
+{
 
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
+    private readonly IEmailSender _email;
 
-    public AuthController(AppDbContext context, IConfiguration config)
+    public AuthController(AppDbContext context, IConfiguration config, IEmailSender email)
     {
         _context = context;
         _config = config;
+        _context = context;
+        _email = email;
     }
 
     // POST: /auth/login
@@ -161,7 +164,7 @@ public class AuthController : ControllerBase {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
         var user = await _context.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.id == userId, ct);
         if (user is null) return NotFound();
-        return Ok(new UserSummary { id = user.id, usuario = user.usuario, email = user.email, ativo = user.ativo });
+        return Ok(new UserSummary { id = user.id, usuario = user.usuario, email = user.email, ativo = user.ativo, rowVersion = user.RowVersion });
     }
 
 
@@ -190,11 +193,11 @@ public class AuthController : ControllerBase {
     }
 
     // POST: /auth/forgot
+    [AllowAnonymous]
     [HttpPost("forgot")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req, CancellationToken ct)
     {
-        
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
 
@@ -205,16 +208,14 @@ public class AuthController : ControllerBase {
             {
                 ["Email"] = new[] { "E-mail inválido." }
             })
-            {
-                Title = "Erros de validação",
-                Status = StatusCodes.Status400BadRequest
-            };
+            { Title = "Erros de validação", Status = StatusCodes.Status400BadRequest };
             return ValidationProblem(problem);
         }
 
-        var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.email == email && u.ativo, ct);
+        var user = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.email == email && u.ativo, ct);
 
-        
+        // Não revela se o e-mail existe
         if (user is null) return NoContent();
 
         // Cria token de reset (expira em 1 hora)
@@ -229,11 +230,10 @@ public class AuthController : ControllerBase {
         _context.PasswordResetToken.Add(token);
         await _context.SaveChangesAsync(ct);
 
-        // Gera link para o FRONTEND
+        // Link para o FRONTEND
         var baseUrl = Environment.GetEnvironmentVariable("FRONT_BASE_URL") ?? "http://localhost:9000";
         var resetLink = $"{baseUrl}/reset-password?token={token.Id}";
 
-        // Corpo do e-mail (simples, pode trocar por template)
         var html = $@"
           <p>Olá {user.usuario},</p>
           <p>Recebemos uma solicitação para redefinir sua senha. Se foi você, use o link abaixo (expira em 1 hora):</p>
@@ -246,7 +246,7 @@ public class AuthController : ControllerBase {
           <p>Se o botão não funcionar, copie e cole este link no navegador:<br/>{resetLink}</p>
           <p>Se você não solicitou, pode ignorar este e-mail.</p>";
 
-        await EmailService.SendAsync(user.email, "Redefinição de senha", html);
+        await _email.SendAsync(user.email, "Redefinição de senha", html);
 
         return NoContent();
     }
@@ -258,7 +258,7 @@ public class AuthController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req, CancellationToken ct)
     {
-        
+
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
 
@@ -286,20 +286,13 @@ public class AuthController : ControllerBase {
         token.User.senha = BCrypt.Net.BCrypt.HashPassword(req.NovaSenha);
         token.Used = true;
 
-        
+
         var refreshToRevoke = _context.AuthRefreshTokens
             .Where(r => r.UserId == token.UserId && r.RevokedAt == null);
         await refreshToRevoke.ForEachAsync(r => r.RevokedAt = DateTimeOffset.UtcNow, ct);
 
         await _context.SaveChangesAsync(ct);
         return NoContent();
-    }
-
-    [HttpGet("test-email")]
-    public async Task<IActionResult> TestEmail()
-    {
-        await EmailService.SendAsync("seuemail@teste.com", "Teste SMTP", "<p>Funcionando 🎉</p>");
-        return Ok("E-mail enviado com sucesso");
     }
 
 

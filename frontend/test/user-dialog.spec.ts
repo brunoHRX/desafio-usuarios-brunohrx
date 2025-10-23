@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-// test/user-dialog.spec.ts
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserDialog } from '../src/components/user-dialog';
-import { api, ApiError } from '../src/services/api'; // não precisa do ApiError real aqui
+import { api } from '../src/services/api';
 
 vi.mock('../src/services/api', async (orig) => {
   const real = await (orig as any)();
@@ -14,7 +14,7 @@ vi.mock('../src/services/api', async (orig) => {
       post: vi.fn(),
       put: vi.fn(),
     },
-    ApiError: real.ApiError,
+    
   };
 });
 
@@ -26,11 +26,11 @@ describe('UserDialog', () => {
   it('exibe erros por campo vindos do backend (create)', async () => {
     const dlg = new UserDialog({} as any);
     dlg.mode = 'create';
-    dlg.usuario = 'ab';         // válido (>= 2)
+    dlg.usuario = 'ab';       
     dlg.email = 'x@x.com';
     dlg.senha = '12345678';
 
-    // ⬇️ mocka um erro no formato que o componente consome
+
     (api.post as any).mockRejectedValue({
       status: 400,
       message: 'Erro de validação',

@@ -42,6 +42,32 @@ public class UsersController : ControllerBase
         return Ok(new PagedResult<UserSummary>(items, total, page, pageSize));
     }
 
+    // GET /api/v1/users/inactive
+    [HttpGet("inactive")]
+    [ProducesResponseType(typeof(PagedResult<UserSummary>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInactive([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null, CancellationToken ct = default)
+    {
+        var q = _context.Usuarios
+            .AsNoTracking()
+            .IgnoreQueryFilters()          // <- necessário para ver soft-deleted
+            .Where(u => !u.ativo);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim().ToLower();
+            q = q.Where(u => u.usuario.ToLower().Contains(s) || u.email.ToLower().Contains(s));
+        }
+
+        var total = await q.CountAsync(ct);
+        var items = await q.OrderBy(u => u.usuario)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(u => new UserSummary { id = u.id, usuario = u.usuario, email = u.email, ativo = u.ativo, rowVersion = u.RowVersion })
+            .ToListAsync(ct);
+
+        return Ok(new PagedResult<UserSummary>(items, total, page, pageSize));
+    }
+
     // GET /users/{id}
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(UserSummary), StatusCodes.Status200OK)]

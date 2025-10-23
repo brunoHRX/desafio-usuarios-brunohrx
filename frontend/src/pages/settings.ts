@@ -1,64 +1,19 @@
 // src/pages/settings.ts
 import { IRouteViewModel } from '@aurelia/router';
-
-type Me = { id: number; usuario: string; email: string; ativo: boolean };
-type InactiveUser = { id: number; usuario: string; email: string; motivo?: string; desativadoEm?: string };
-
-// ---- Ajuste aqui se tiver prefixo (ex.: '/api')
-const API = {
-  me: '/auth/me',
-  users: '/users',
-  user: (id: number) => `/users/${id}`,
-  userPassword: (id: number) => `/users/${id}/password`,
-};
-
-async function api<T = unknown>(
-  input: RequestInfo,
-  init?: RequestInit & { expect?: number | number[] }
-): Promise<T> {
-  const res = await fetch(input, {
-    credentials: 'include', // envia cookies de auth
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-    ...init,
-  });
-
-  const okCodes = Array.isArray(init?.expect)
-    ? init?.expect
-    : init?.expect
-    ? [init.expect]
-    : [200, 201, 204];
-
-  if (!okCodes.includes(res.status)) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const data = await res.json();
-      msg = data?.message ?? data?.error ?? msg;
-    } catch {
-      // response sem JSON
-    }
-    throw new Error(msg);
-  }
-
-  // 204 no content
-  if (res.status === 204) return undefined as unknown as T;
-
-  const ct = res.headers.get('content-type') || '';
-  if (ct.includes('application/json')) return (await res.json()) as T;
-
-  // fallback: texto
-  return (await res.text()) as unknown as T;
-}
+import { userService, type UserSummary, type InactiveUser } from '../services/user';
+import { ApiError } from '../services/api';
 
 export class Settings implements IRouteViewModel {
-  // UI state
+  // UI
   activeTab: 'profile' | 'inactive' = 'profile';
   isSaving = false;
+  isLoadingMe = true;
   isLoadingInactive = false;
   error?: string;
   feedback?: string;
 
   // Perfil
-  me?: Me;
+  me?: UserSummary;
   profile = {
     usuario: '',
     email: '',
@@ -74,37 +29,40 @@ export class Settings implements IRouteViewModel {
   pageSize = 10;
   total = 0;
 
-  // ===== Lifecycle
+  // ===== lifecycle
   async attaching() {
     await this.loadMe();
   }
 
-  // ===== Tabs
+  // ===== tabs
   setTab(tab: 'profile' | 'inactive') {
     this.activeTab = tab;
     if (tab === 'inactive') this.loadInactive();
   }
 
-  // ===== Perfil
+  // ===== perfil
   get senhaOk() {
     const { novaSenha, confirmaSenha } = this.profile;
-    if (!novaSenha && !confirmaSenha) return true; // troca de senha é opcional
+    if (!novaSenha && !confirmaSenha) return true;
     return novaSenha.length >= 8 && novaSenha === confirmaSenha;
   }
 
-  private copyMeToForm(me: Me) {
+  private copyMeToForm(me: UserSummary) {
     this.profile.usuario = me.usuario ?? '';
     this.profile.email = me.email ?? '';
   }
 
   async loadMe() {
     this.error = undefined;
+    this.isLoadingMe = true;
     try {
-      const me = await api<Me>(API.me, { method: 'GET' });
+      const me = await userService.me();
       this.me = me;
       this.copyMeToForm(me);
-    } catch (err: any) {
-      this.error = err?.message ?? 'Falha ao carregar perfil.';
+    } catch (err) {
+      this.error = this.humanError(err, 'Falha ao carregar perfil.');
+    } finally {
+      this.isLoadingMe = false;
     }
   }
 
@@ -113,7 +71,7 @@ export class Settings implements IRouteViewModel {
     this.error = undefined;
     this.feedback = undefined;
 
-    if (!this.me) {
+    if (!this.me?.id) {
       this.error = 'Sessão expirada.';
       return;
     }
@@ -124,63 +82,47 @@ export class Settings implements IRouteViewModel {
 
     this.isSaving = true;
     try {
-      // 1) PATCH básico (usuario/email)
-      const patchBody: Partial<Pick<Me, 'usuario' | 'email'>> = {
+      // Atualiza usuário (usuario/email)
+      await userService.update(this.me.id, {
         usuario: this.profile.usuario,
         email: this.profile.email,
-      };
-      await api(API.user(this.me.id), {
-        method: 'PATCH',
-        body: JSON.stringify(patchBody),
-        expect: [200, 204],
+        rowVersion: this.me.rowVersion,
       });
-
-      // 2) Troca de senha (opcional)
+      
+      // Troca de senha (opcional)
       if (this.profile.novaSenha) {
-        await api(API.userPassword(this.me.id), {
-          method: 'PUT',
-          body: JSON.stringify({
-            currentPassword: this.profile.senhaAtual,
-            newPassword: this.profile.novaSenha,
-          }),
-          expect: [200, 204],
-        });
+        await userService.changePassword(this.me.id, this.profile.senhaAtual, this.profile.novaSenha, this.profile.confirmaSenha);
       }
 
-      // Atualiza estado local e limpa senha
+      
+
       await this.loadMe();
       this.profile.senhaAtual = '';
       this.profile.novaSenha = '';
       this.profile.confirmaSenha = '';
       this.feedback = 'Perfil atualizado com sucesso.';
-    } catch (err: any) {
-      this.error = err?.message ?? 'Falha ao salvar perfil.';
+    } catch (err) {
+      this.error = this.humanError(err, 'Falha ao salvar perfil.');
     } finally {
       this.isSaving = false;
     }
   }
+  
 
-  // ===== Inativos
+  // ===== inativos
   async loadInactive() {
     this.isLoadingInactive = true;
     this.error = undefined;
     try {
-      const params = new URLSearchParams({
-        status: 'inactive',
-        search: this.search ?? '',
-        page: String(this.page),
-        pageSize: String(this.pageSize),
+      const resp = await userService.listInactive({
+        search: this.search,
+        page: this.page,
+        pageSize: this.pageSize,
       });
-      // Espera { data, total } no padrão REST comum; ajuste se necessário
-      const resp = await api<{ data: InactiveUser[]; total: number }>(`${API.users}?${params.toString()}`, {
-        method: 'GET',
-        expect: 200,
-      });
-
       this.users = resp.data ?? [];
       this.total = resp.total ?? this.users.length;
-    } catch (err: any) {
-      this.error = err?.message ?? 'Falha ao carregar usuários inativos.';
+    } catch (err) {
+      this.error = this.humanError(err, 'Falha ao carregar usuários inativos.');
       this.users = [];
       this.total = 0;
     } finally {
@@ -195,52 +137,49 @@ export class Settings implements IRouteViewModel {
   }
 
   async reactivateUser(id: number) {
-    this.error = undefined;
     try {
-      await api(API.user(id), {
-        method: 'PATCH',
-        body: JSON.stringify({ ativo: true }),
-        expect: [200, 204],
-      });
-      // Atualiza a lista local
+      await userService.reactivate(id);
+      // atualiza lista local ou recarrega
       this.users = this.users.filter(u => u.id !== id);
       this.total = Math.max(0, this.total - 1);
       if (this.users.length === 0 && this.page > 1) {
         this.page--;
         await this.loadInactive();
       }
-    } catch (err: any) {
-      this.error = err?.message ?? 'Falha ao reativar usuário.';
+    } catch (err) {
+      this.error = this.humanError(err, 'Falha ao reativar usuário.');
     }
   }
 
   async deleteUser(id: number) {
     if (!confirm('Remover definitivamente este usuário?')) return;
-    this.error = undefined;
     try {
-      await api(API.user(id), { method: 'DELETE', expect: [200, 204] });
+      await userService.hardDelete(id);
       this.users = this.users.filter(u => u.id !== id);
       this.total = Math.max(0, this.total - 1);
       if (this.users.length === 0 && this.page > 1) {
         this.page--;
         await this.loadInactive();
       }
-    } catch (err: any) {
-      this.error = err?.message ?? 'Falha ao remover usuário.';
+    } catch (err) {
+      this.error = this.humanError(err, 'Falha ao remover usuário.');
     }
   }
 
   prevPage() {
-    if (this.page > 1) {
-      this.page--;
-      this.loadInactive();
-    }
+    if (this.page > 1) { this.page--; this.loadInactive(); }
+  }
+  nextPage() {
+    if (this.page * this.pageSize < this.total) { this.page++; this.loadInactive(); }
   }
 
-  nextPage() {
-    if (this.page * this.pageSize < this.total) {
-      this.page++;
-      this.loadInactive();
+  // ===== util erro
+  private humanError(err: unknown, fallback: string) {
+    if (err instanceof ApiError) {
+      const d = err.problem;
+      const detail = d?.detail || Object.values(d?.errors ?? {})[0]?.[0];
+      return detail || err.message || fallback;
     }
+    return (err as any)?.message ?? fallback;
   }
 }

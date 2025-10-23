@@ -90,11 +90,13 @@ async function tryRefreshToken(): Promise<boolean> {
 }
 
 export const api = {
-  get: <T = unknown>(p: string) => request<T>(p),
+  get:  <T = unknown>(p: string) => request<T>(p),
   post: <T = unknown>(p: string, body?: unknown) =>
     request<T>(p, { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined }),
-  put: <T = unknown>(p: string, body?: unknown) =>
-    request<T>(p, { method: 'PUT', body: body !== undefined ? JSON.stringify(body) : undefined }),
+  put:  <T = unknown>(p: string, body?: unknown) =>
+    request<T>(p, { method: 'PUT',  body: body !== undefined ? JSON.stringify(body) : undefined }),
+  patch:<T = unknown>(p: string, body?: unknown) =>                   
+    request<T>(p, { method: 'PATCH', body: body !== undefined ? JSON.stringify(body) : undefined }),
   delete: <T = unknown>(p: string) => request<T>(p, { method: 'DELETE' }),
 
   _setAuth: setAuth,

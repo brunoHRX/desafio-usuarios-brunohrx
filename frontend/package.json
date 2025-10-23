@@ -10,11 +10,17 @@
   "dependencies": {
     "@aurelia/dialog": "^2.0.0-beta.25",
     "@aurelia/router": "latest",
-    "aurelia": "latest"
+    "aurelia": "latest",
+    "core-js": "^3.46.0",
+    "focus-visible": "^5.2.1",
+    "intersection-observer": "^0.12.2",
+    "resize-observer-polyfill": "^1.5.1",
+    "whatwg-fetch": "^3.6.20"
   },
   "devDependencies": {
     "@aurelia/testing": "latest",
     "@aurelia/vite-plugin": "latest",
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/vite": "^4.1.14",
     "@types/node": "^22.10.2",
     "@vitest/ui": "^2.1.9",
@@ -45,5 +51,10 @@
     "vite-plugin-node-polyfills": {
       "vite": "^6.0.0"
     }
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

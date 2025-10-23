@@ -29,7 +29,7 @@ export class ThemeToggle {
   isDark = false
 
   binding() {
-    // inicializa tema a partir do localStorage ou prefers-color-scheme
+    // inicializa tema a partir do localStorage
     const stored = localStorage.getItem('theme')
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     const dark = stored ? stored === 'dark' : prefersDark

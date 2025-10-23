@@ -2,7 +2,6 @@ using desafio_usuarios_brunohrx.Controllers;
 using desafio_usuarios_brunohrx.Startup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -55,7 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 // Configuração de versionamento de API
 builder.Services.AddApiVersioning(options =>

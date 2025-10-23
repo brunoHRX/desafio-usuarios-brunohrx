@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-
-// test/api.request.spec.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.stubGlobal('fetch', vi.fn());
@@ -23,12 +21,12 @@ describe('api.request', () => {
   let api: any;
 
   beforeEach(async () => {
-    // ⬇️ define VITE_API_BASE *antes* de importar o módulo
+    
     vi.stubEnv('VITE_API_BASE', VITE_API_BASE);
     (fetch as any).mockReset();
     localStorage.clear();
 
-    // ⬇️ força recarregar o módulo com o env novo
+    
     vi.resetModules();
     api = (await import('../src/services/api')).api;
   });
