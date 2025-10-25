@@ -1,5 +1,9 @@
 # 🧩 Desafio de Gestão de Usuários
-
+![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
+![Aurelia 2](https://img.shields.io/badge/Aurelia-2.0-C14646?logo=aurelia&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite&logoColor=white)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-local-red?logo=microsoftsqlserver&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
 O desafio proposto consistiu na criação de um sistema simples para **gerenciamento de usuários**, utilizando a seguinte stack recomendada:  
 **Frontend:** Angular ou Aurelia.io · **Backend:** .NET Core (C#) · **Banco de Dados:** SQL Server · **APIs:** REST.
 
@@ -79,12 +83,6 @@ Os valores ficam armazenados apenas no perfil do desenvolvedor e não são commi
 - O `Program.cs` valida chaves obrigatórias durante a inicialização; mantenha os placeholders no repositório e ajuste apenas via ambiente.
 
 ## 🧭 Guia de Execução Local
-
-![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
-![Aurelia 2](https://img.shields.io/badge/Aurelia-2.0-C14646?logo=aurelia&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite&logoColor=white)
-![SQL Server](https://img.shields.io/badge/SQL%20Server-local-red?logo=microsoftsqlserver&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green)
 
 Este repositório implementa o desafio de gestão de usuários com uma API em **ASP.NET Core 8** e uma SPA em **Aurelia 2 + Vite**. O objetivo deste guia é orientar a preparação completa do ambiente de desenvolvimento local.
 
