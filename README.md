@@ -55,7 +55,20 @@ export Smtp__Pass="senha-ou-token"
 export Smtp__From="no-reply@seudominio.com"
 ```
 
-Configure-as no shell antes de subir a API. Em Windows PowerShell use `$env:Jwt__Key="valor"` e equivalentes.
+#### 📬 Usando o Mailtrap como servidor de e-mail
+
+Caso utilize o [Mailtrap](https://mailtrap.io/) para testar o envio de e-mails, copie as credenciais do inbox (aba **SMTP Settings**) e exporte-as para as variáveis já existentes:
+
+```bash
+export Smtp__Host="sandbox.smtp.mailtrap.io"
+export Smtp__Port="587"          # ou 2525, conforme indicado pelo Mailtrap
+export Smtp__User="<SEU_USER>"
+export Smtp__Pass="<SEU_TOKEN>"
+export Smtp__From="no-reply@seudominio.com"  # remetente exibido nos e-mails de teste
+```
+
+> 💡 Utilize o valor `API Token` mostrado no Mailtrap como senha. Se preferir a API HTTP do Mailtrap, ajuste o `SmtpEmailSender` para usar o SDK correspondente.
+
 
 ### 💻 User Secrets (desenvolvimento)
 
