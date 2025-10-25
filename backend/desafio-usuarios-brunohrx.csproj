@@ -5,7 +5,8 @@
 	<Nullable>enable</Nullable>
 	<ImplicitUsings>enable</ImplicitUsings>
 	<RootNamespace>desafio_usuarios_brunohrx</RootNamespace>
-	</PropertyGroup>
+	  <UserSecretsId>1aa22136-d0d7-43c4-a863-78ff1ab713f5</UserSecretsId>
+  </PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />

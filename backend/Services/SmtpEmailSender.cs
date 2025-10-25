@@ -1,34 +1,26 @@
-﻿// Services/SmtpEmailSender.cs
+﻿using DesafioUsuarios.Api.Options;
+using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
-using System.Threading.Tasks;
 
 public sealed class SmtpEmailSender : IEmailSender
 {
-    private readonly string _host;
-    private readonly int _port;
-    private readonly string _user;
-    private readonly string _pass;
-    private readonly string _from;
+    private readonly SmtpOptions _opts;
 
-    public SmtpEmailSender(IConfiguration cfg)
+    public SmtpEmailSender(IOptions<SmtpOptions> opts)
     {
-        _host = cfg["SMTP_HOST"] ?? "live.smtp.mailtrap.io";
-        _port = int.TryParse(cfg["SMTP_PORT"], out var p) ? p : 587;
-        _user = cfg["SMTP_USER"] ?? "api";
-        _pass = cfg["SMTP_PASS"] ?? "da6ffde4ceef38e55812ef0e310730cd";              // seu API token
-        _from = cfg["SMTP_FROM"] ?? "no-reply@duckcode.dev";
+        _opts = opts.Value;
     }
 
     public async Task SendAsync(string to, string subject, string htmlBody)
     {
-        using var client = new SmtpClient(_host, _port)
+        using var client = new SmtpClient(_opts.Host, _opts.Port)
         {
-            Credentials = new NetworkCredential(_user, _pass),
+            Credentials = new NetworkCredential(_opts.User, _opts.Pass),
             EnableSsl = true
         };
 
-        using var msg = new MailMessage(_from, to, subject, htmlBody)
+        using var msg = new MailMessage(_opts.From, to, subject, htmlBody)
         {
             IsBodyHtml = true
         };

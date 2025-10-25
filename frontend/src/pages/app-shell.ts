@@ -16,10 +16,8 @@ export class AppShell implements IRouteViewModel {
   ];
 
   async canLoad() {
-    console.log('app-shell.canLoad start', { path: location.pathname });
     await auth.ensure().catch(() => {});
     const authed = auth.isAuthenticated();
-    console.log('app-shell.canLoad authed?', authed);
     if (!authed) {
       await this.router.load('/login');
       return false;

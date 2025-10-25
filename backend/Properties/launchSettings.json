@@ -17,12 +17,6 @@
       "applicationUrl": "http://localhost:5191",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "SMTP_HOST": "live.smtp.mailtrap.io",
-        "SMTP_PORT": "587",
-        "SMTP_USER": "api",
-        "SMTP_PASS": "da6ffde4ceef38e55812ef0e310730cd",
-        "SENDER_EMAIL": "no-reply@duckcode.dev",
-        "SENDER_NAME": "Desafio Usuários"
       }
     },
     "https": {

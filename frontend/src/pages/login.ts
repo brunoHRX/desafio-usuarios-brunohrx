@@ -14,10 +14,8 @@ export class Login {
   error: string | null = null;
 
   async canLoad() {
-  console.log('login.canLoad start', { path: location.pathname });
   await auth.ensure().catch(() => {}); // nunca lançar
   const authed = auth.isAuthenticated();
-  console.log('login.canLoad authed?', authed);
   if (authed) { await this.router.load('/app'); return false; }
   return true;
   }

@@ -1,11 +1,36 @@
 using desafio_usuarios_brunohrx.Controllers;
 using desafio_usuarios_brunohrx.Startup;
+using DesafioUsuarios.Api.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Key), "Jwt:Key ausente")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer), "Jwt:Issuer ausente")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Audience), "Jwt:Audience ausente")
+    .ValidateOnStart();
+
+builder.Services
+    .AddOptions<SmtpOptions>()
+    .Bind(builder.Configuration.GetSection(SmtpOptions.SectionName))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Host), "Smtp:Host ausente")
+    .Validate(o => o.Port > 0, "Smtp:Port inválido")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.User), "Smtp:User ausente")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Pass), "Smtp:Pass ausente")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.From), "Smtp:From ausente")
+    .ValidateOnStart();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection ausente");
+
+
+builder.AddDependencies();
 
 
 // Configuração de CORS
@@ -26,18 +51,44 @@ builder.Services.AddControllers(options =>
 });
 
 
-builder.AddDependencies();
-
 
 //Autenticação JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(options =>
+//    {
+//        var issuer = builder.Configuration["Jwt:Issuer"];
+//        var audience = builder.Configuration["Jwt:Audience"];
+//        var key = builder.Configuration["Jwt:Key"];
+//        if (string.IsNullOrWhiteSpace(key))
+//            throw new InvalidOperationException("Jwt:Key não configurada");
+
+//        options.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            ValidateIssuer = true,
+//            ValidateAudience = true,
+//            ValidateLifetime = true,
+//            ValidateIssuerSigningKey = true,
+//            ValidIssuer = issuer,
+//            ValidAudience = audience,
+//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+//        };
+//    });
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var issuer = builder.Configuration["Jwt:Issuer"];
-        var audience = builder.Configuration["Jwt:Audience"];
-        var key = builder.Configuration["Jwt:Key"];
-        if (string.IsNullOrWhiteSpace(key))
-            throw new InvalidOperationException("Jwt:Key não configurada");
+        
+        var jwt = builder.Configuration
+            .GetSection(JwtOptions.SectionName)
+            .Get<JwtOptions>()
+            ?? throw new InvalidOperationException("Seção 'Jwt' ausente.");
+
+        if (string.IsNullOrWhiteSpace(jwt.Key))
+            throw new InvalidOperationException("Jwt:Key não configurada.");
+
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.SaveToken = false;
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -45,12 +96,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = issuer,
-            ValidAudience = audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
+            ClockSkew = TimeSpan.Zero // evita “token ainda não válido/expirado” por tolerância de relógio
         };
     });
-
 
 builder.Services.AddAuthorization();
 
@@ -70,6 +121,8 @@ builder.Services.AddVersionedApiExplorer(options =>
     options.GroupNameFormat = "'v'VVV";           // v1, v1.1, v2
     options.SubstituteApiVersionInUrl = true;     // substitui {version} na rota
 });
+
+builder.Services.AddHealthChecks();
 
 builder.Services.AddRateLimiting();
 
@@ -98,6 +151,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseSwaggerConfiguration();
+
+
 
 app.AddRootControllers();
 

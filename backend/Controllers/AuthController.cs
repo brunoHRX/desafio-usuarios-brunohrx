@@ -26,7 +26,6 @@ public class AuthController : ControllerBase
     {
         _context = context;
         _config = config;
-        _context = context;
         _email = email;
     }
 
