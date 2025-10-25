@@ -4,6 +4,8 @@
 ![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite&logoColor=white)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-local-red?logo=microsoftsqlserver&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
+
+
 O desafio proposto consistiu na criação de um sistema simples para **gerenciamento de usuários**, utilizando a seguinte stack recomendada:  
 **Frontend:** Angular ou Aurelia.io · **Backend:** .NET Core (C#) · **Banco de Dados:** SQL Server · **APIs:** REST.
 
